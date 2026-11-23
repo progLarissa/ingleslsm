@@ -21,7 +21,7 @@ for lst in [R,R3,R4,R5,R6,R7]:
 for o,n in HASH: s=s.replace(o,n)
 k='\nrender();\ninitSync();'
 assert k in s
-s=s.replace(k,'\n'+open('exams_app.js').read()+'\n'+open('plan_app.js').read()+'\n'+open('books_app.js').read()+k)
+s=s.replace(k,'\n'+open('exams_app.js').read()+'\n'+open('plan_app.js').read()+'\n'+open('books_app.js').read()+'\n'+open('vocab_app.js').read()+'\n'+open('writing_app.js').read()+k)
 rs=open('rhythm_app.js').read()
 import re as _re
 for name in ['tick','streaks','rhythmWidget','updRhythm','homeRhythm']:

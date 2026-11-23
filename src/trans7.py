@@ -13,7 +13,7 @@ r("""  <h2 class="sec">Listening and speaking</h2>""","""  <section class="card 
   <h2 class="sec">Listening and speaking</h2>""")
 
 
-r("'asc','exam','examGen']","'asc','exam','examGen','plan','books']",2)
+r("'asc','exam','examGen']","'asc','exam','examGen','plan','books','wexam','vsr']",2)
 r("r.name=n.name||o.name;","r.plan=Object.assign({},(O.plan||{}),(n.plan||{})); r.plan.tick=Object.assign({},(O.plan&&O.plan.tick)||{},(n.plan&&n.plan.tick)||{});\n  r.name=n.name||o.name;")
 r("""  if(h==='exams') return {type:'exams'};""","""  if(h==='exams') return {type:'exams'};
   if(h==='plan') return {type:'plan'};""")
@@ -28,3 +28,23 @@ r("""  if(h==='plan') return {type:'plan'};""","""  if(h==='plan') return {type:
 r("  else if(r.type==='plan') renderPlan();","  else if(r.type==='plan') renderPlan();\n  else if(r.type==='books') renderBooks(r.id);")
 r("""<span class="t">My plan<br><small class="note">${planNavNote()}</small></span></a></li>""","""<span class="t">My plan<br><small class="note">${planNavNote()}</small></span></a></li>
    <li><a class="navlink tool" href="#books" ${route.type==='books'?'aria-current="page"':''}><span class="n">❧</span><span class="t">Your books<br><small class="note">${BOOKS.map((B,i)=>((S.books&&S.books[i])||0)+'/'+B.ch).join(' · ')} chapters</small></span></a></li>""")
+
+r("const texts={write:o.write,corr:o.corr,gen:o.gen,examGen:o.examGen}; delete o.write; delete o.corr; delete o.gen; delete o.examGen;","const texts={write:o.write,corr:o.corr,gen:o.gen,examGen:o.examGen,wexam:o.wexam}; delete o.write; delete o.corr; delete o.gen; delete o.examGen; delete o.wexam;")
+r("  r.name=n.name||o.name; r.at=","  r.vsr=Object.assign({},O.vsr||{}); Object.entries(n.vsr||{}).forEach(([k,v])=>{ if(!r.vsr[k]||(v.u||0)>=(r.vsr[k].u||0)) r.vsr[k]=v; });\n  r.name=n.name||o.name; r.at=")
+r("stopTestTimer(); stopExamTimer(); stopSpeak(); stopOral();","stopTestTimer(); stopExamTimer(); stopWexTimer(); stopSpeak(); stopOral();")
+r("""  if(h==='books') return {type:'books'};""","""  if(h==='books') return {type:'books'};
+  if(h==='words') return {type:'words'};
+  if(h==='writing') return {type:'writing'};
+  if((m=h.match(/^writing-([a-z0-9-]+)$/))) return {type:'writing',id:m[1]};""")
+r("  else if(r.type==='books') renderBooks(r.id);","  else if(r.type==='books') renderBooks(r.id);\n  else if(r.type==='words') renderWords();\n  else if(r.type==='writing') renderWriting(r.id);")
+r("""<span class="t">Reading exams<br><small class="note">${EXAMS.length} practices · Cambridge &amp; IELTS</small></span></a></li>""","""<span class="t">Reading exams<br><small class="note">${EXAMS.length} practices · Cambridge &amp; IELTS</small></span></a></li><li><a class="navlink tool" href="#writing" ${route.type==='writing'?'aria-current="page"':''}><span class="n">✍</span><span class="t">Writing exams<br><small class="note">${WEXAMS.length} tasks · marked by criterion</small></span></a></li>""")
+r("""   <li><a class="navlink tool" href="#vocabulary" ${route.type==='lessico'?'aria-current="page"':''}>""","""   <li><a class="navlink tool" href="#words" ${route.type==='words'?'aria-current="page"':''}><span class="n">↻</span><span class="t">Word review ${vDue().length?`<span class="badge">${vDue().length}</span>`:''}<br><small class="note">${vStats().all} in review · ${vStats().mastered} mastered</small></span></a></li>
+   <li><a class="navlink tool" href="#vocabulary" ${route.type==='lessico'?'aria-current="page"':''}>""")
+r("""      $('#lxyes').onclick=()=>{ S.voc[w[0]]=true; tick(); save(); pos++; show(); };
+      $('#lxno').onclick=()=>{ S.voc[w[0]]=false; ""","""      $('#lxyes').onclick=()=>{ S.voc[w[0]]=true; vAdd(vKeyLex(id,order[pos]),1); tick(); save(); pos++; show(); };
+      $('#lxno').onclick=()=>{ S.voc[w[0]]=false; vAdd(vKeyLex(id,order[pos]),0); """)
+r("""const k='w'+Date.now().toString(36); S.myvoc[k]={it,pt,ex:""","""const k='w'+Date.now().toString(36); vAdd('my:'+k,0); S.myvoc[k]={it,pt,ex:""")
+r("""<p class="subtitle">Every wrong answer lands here and comes back after 1, 3, 7 and 15 days. Get it right four times in a row and it counts as mastered.</p></header>""","""<p class="subtitle">Every wrong answer lands here and comes back after 1, 3, 7 and 15 days. Get it right four times in a row and it counts as mastered.</p></header>
+   ${vDue().length?`<section class="card examcta"><div><span class="lab">Also due today</span><h3>${vDue().length} ${vDue().length===1?'word':'words'} to review</h3><p class="note" style="margin:0">Spaced review of your vocabulary.</p></div><a class="btn primary" href="#words">Word review →</a></section>`:''}""")
+r("""<section class="card examcta"><div><span class="lab">Your main goal · reading for exams</span>""","""<section class="card examcta"><div><span class="lab">Exam writing</span><h3>Writing exams</h3><p>Essays, e-mails, reviews, reports and proposals in the real Cambridge and IELTS formats, marked criterion by criterion like an examiner.</p></div><a class="btn" href="#writing">Write now →</a></section>
+  <section class="card examcta"><div><span class="lab">Your main goal · reading for exams</span>""")

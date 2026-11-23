@@ -565,6 +565,17 @@ details.card summary{cursor:pointer}
 .bcover.lg2{max-height:260px;width:170px}
 .bookhead{display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:start;margin-bottom:22px}
 @media (max-width:700px){.bookgrid{grid-template-columns:minmax(0,1fr)}.bookcard .bcover{max-height:120px;aspect-ratio:auto}.bookhead{grid-template-columns:minmax(0,1fr)}.bcover.lg2{width:120px;max-height:180px}.pbook{grid-template-columns:24px minmax(0,1fr)}.pbook .btn{grid-column:2;justify-self:start;padding-left:0}}
+
+/* writing exams + word review */
+.wtask blockquote{margin:10px 0;padding:12px 16px;border-left:4px solid var(--brass);background:var(--paper);border-radius:0 10px 10px 0;font-family:var(--f-read)}
+.wtask p{font-family:var(--f-read);font-size:17px}
+.wchart{margin:12px 0;color:var(--ink);overflow-x:auto}
+.wchart svg{width:100%;max-width:560px;height:auto;display:block}
+.wscores{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:10px 0 16px}
+.wsc{display:grid;gap:4px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.wsc b{font-family:var(--f-display);font-size:24px}
+.wsc small{font-size:.55em;color:var(--muted)}
+#wxtext{min-height:380px}
 </style>
 
 <div class="app">
@@ -3394,6 +3405,174 @@ const BOOKS = [
  words:[['a log entry','um registro de diário'],['to figure out','descobrir, resolver'],['crops','plantação'],['to run out of','ficar sem'],['a rover','um veículo de exploração'],['a rescue','um resgate']],
  screen:'The Martian (film by Ridley Scott, 2015)', tip:'Some technical paragraphs are hard: skim them, the story is in the diary. 8–10 pages a day.'}
 ];
+/* ───────── WRITING EXAMS ───────── */
+const WGENRE = {
+essay:{name:'Essay', guide:`Registro formal ou neutro, sem contrações. <b>Estrutura:</b> introdução que reformula a pergunta → um parágrafo por ponto (ideia + explicação + exemplo) → conclusão com a sua opinião clara. Na Cambridge, você precisa tratar os pontos dados e, no B2, acrescentar uma ideia sua.`,
+ ph:['It is often argued that…','There are several reasons why…','One major advantage of… is that…','On the other hand, it could be argued that…','A further point to consider is…','For instance, …','Taking everything into account, I believe that…']},
+email:{name:'E-mail / letter', guide:`Responda a <b>todas</b> as perguntas ou pontos da mensagem recebida. Para um amigo: informal, com contrações e expressões naturais. Para uma empresa: formal, sem contrações. Comece e termine de forma adequada ao destinatário.`,
+ ph:['Thanks so much for your email!','It was great to hear from you.','You asked me about…','If I were you, I\'d…','I am writing to complain about…','I would be grateful if you could…','I look forward to hearing from you.']},
+review:{name:'Review', guide:`O leitor quer saber se vale a pena. <b>Estrutura:</b> título → apresentação (o que é, onde, quem) → o que é bom e o que é fraco, com detalhes concretos → recomendação clara (para quem?). Use adjetivos variados e algum toque pessoal.`,
+ ph:['If you are looking for…, look no further.','What makes it special is…','The only drawback is…','Although…, it is well worth…','I would highly recommend it to anyone who…','It is not for everyone, but…']},
+report:{name:'Report', guide:`Texto para um chefe, diretor ou comitê: objetivo e organizado. <b>Use títulos</b> (Introduction, …, Recommendations), frases impessoais e a passiva. Diga o objetivo no início e termine com recomendações concretas.`,
+ ph:['The aim of this report is to…','This report is based on…','It was found that…','A majority of staff reported that…','It is therefore recommended that…','In conclusion, …']},
+proposal:{name:'Proposal', guide:`Parecido com o report, mas olha para o <b>futuro</b>: você propõe algo e convence. Use títulos, explique a situação atual, apresente as suas sugestões e os benefícios esperados. Tom formal e persuasivo.`,
+ ph:['The purpose of this proposal is to…','At present, …','I would suggest that…','One option would be to…','This would not only…, but also…','I strongly believe that these measures would…']},
+article:{name:'Article', guide:`Para uma revista ou site: o objetivo é <b>prender o leitor</b>. Título chamativo, abertura com pergunta ou situação, tom vivo e pessoal, fale diretamente com o leitor e feche com uma ideia que fique na cabeça.`,
+ ph:['Have you ever wondered…?','Imagine…','Let me tell you about…','Believe it or not, …','The best part is…','So, next time you…, why not…?']},
+task1:{name:'IELTS Task 1 (graph)', guide:`Descreva dados, <b>não opine</b>. <b>Estrutura:</b> introdução (reformule o título) → overview com as 2 ou 3 tendências principais (essencial para nota alta) → dois parágrafos com números e comparações. Mínimo 150 palavras, 20 minutos.`,
+ ph:['The bar chart compares…','Overall, it is clear that…','The most striking feature is…','…rose significantly from…% to…%','…remained relatively stable at…','In contrast, …','…was roughly twice as high as…']},
+task2:{name:'IELTS Task 2 (essay)', guide:`Ensaio de opinião ou discussão, 250 palavras, 40 minutos. Responda <b>exatamente</b> à pergunta (To what extent do you agree? Discuss both views…). Posição clara já na introdução e mantida até a conclusão. Dois ou três parágrafos de desenvolvimento, cada um com uma ideia principal.`,
+ ph:['It is sometimes argued that…','I completely agree / partly agree that…','The main reason for this is that…','A clear example of this is…','Admittedly, …; however, …','In conclusion, while…, I firmly believe that…']}
+};
+
+const WEXAMS = [
+{id:'b2-essay', exam:'cam', lvl:'B2', g:'essay', minutes:40, words:[140,190], title:'Screens and children',
+ prompt:`<p>In your English class you have been talking about technology and young people. Now your teacher has asked you to write an essay.</p><blockquote><b>Should there be strict limits on how much time children spend in front of screens?</b><br>Notes — write about:<br>1. health<br>2. education<br>3. ……… (your own idea)</blockquote>`,
+ model:`Most children today spend several hours a day looking at phones, tablets or televisions. Some people believe that parents and schools should set strict limits, while others think this is unnecessary. In my view, limits are useful, but they should be flexible.
+
+Firstly, there are clear health reasons for limiting screen time. Children who spend too long in front of a screen often sleep worse and do less exercise. As a result, they may have problems with concentration and even with their weight.
+
+On the other hand, screens can be excellent tools for learning. Educational apps and videos can explain difficult topics in an attractive way, and many schools now use tablets in class. Banning them completely would not make sense.
+
+Another point is family life. When everyone is looking at a different screen, families talk less. Simple rules, such as no phones at dinner, can make a real difference.
+
+To sum up, I believe that limits are necessary, but they should focus on how screens are used, not only on how long.`},
+{id:'b2-email', exam:'cam', lvl:'B2', g:'email', minutes:40, words:[140,190], title:'Advice for a friend',
+ prompt:`<p>You have received this email from your English-speaking friend, Sam.</p><blockquote>I've just been offered a job in Lisbon, but I don't speak any Portuguese! I start in three months. What's the best way to learn quickly? And what should I know about living there? Any other tips? Thanks! Sam</blockquote><p>Write your <b>email</b>.</p>`,
+ model:`Hi Sam,
+
+Congratulations on the new job! That's fantastic news, and Lisbon is a wonderful city, so you're going to love it.
+
+Don't worry about the language. Three months is enough to learn the basics if you study a little every day. I'd start with an app for twenty minutes a day, and then find a conversation partner online as soon as possible. Speaking from the beginning is the best way to lose the fear. You should also watch Portuguese series with subtitles; it's a great way to get used to the sound.
+
+As for living there, remember that the city is full of hills, so bring comfortable shoes! Rents in the centre can be expensive, so you might want to look at neighbourhoods a bit further out. People are very friendly, and they really appreciate it when foreigners try to speak Portuguese, even badly.
+
+One last tip: try the custard tarts as soon as you arrive. You won't regret it!
+
+Let me know if you need anything else.
+
+Best wishes,
+Larissa`},
+{id:'b2-review', exam:'cam', lvl:'B2', g:'review', minutes:40, words:[140,190], title:'A series that made you laugh',
+ prompt:`<p>You see this announcement on an English-language website.</p><blockquote><b>Reviews wanted!</b><br>Tell us about a TV series that made you laugh. What is it about? What makes it funny? Would you recommend it to people who are learning English?<br>The best reviews will be published next month.</blockquote><p>Write your <b>review</b>.</p>`,
+ model:`Ted Lasso: kindness has never been so funny
+
+If you're looking for a series that will make you smile from the first episode, look no further than Ted Lasso. It tells the story of an American football coach who is hired to manage an English football team, although he knows absolutely nothing about the sport.
+
+What makes it so funny is the contrast between Ted's endless optimism and the cynical people around him. His jokes are often terrible, but his kindness slowly changes everyone, and you find yourself laughing and crying in the same scene.
+
+For English learners, it's a real treasure. You can hear American and several British accents side by side, and the dialogue is full of everyday expressions. The only drawback is that some characters speak very fast, so I'd recommend using English subtitles at first.
+
+All in all, I would highly recommend Ted Lasso to anyone who needs a good laugh and wants to improve their listening at the same time.`},
+{id:'b2-report', exam:'cam', lvl:'B2', g:'report', minutes:40, words:[140,190], title:'Studying at the local library',
+ prompt:`<p>The director of your local library wants to attract more young adults. He has asked you to write a report explaining what the library offers now, what young people think of it, and what changes you recommend.</p><p>Write your <b>report</b>.</p>`,
+ model:`Introduction
+The aim of this report is to describe the current facilities of the library, summarise the opinions of young adults and recommend some changes. It is based on a short survey of thirty people aged between 18 and 30.
+
+Current facilities
+The library has a large collection of books and a quiet reading room. It is open from 10 a.m. to 6 p.m. on weekdays and closed at weekends.
+
+Opinions of young adults
+Most people surveyed said that the building is pleasant, but the opening hours are a problem, as many of them work or study during the day. Several also complained that the Wi-Fi is slow and that there are very few power sockets.
+
+Recommendations
+It is recommended that the library should open in the evenings and on Saturday mornings. Improving the Wi-Fi and adding more sockets would make it a popular place to study. Finally, organising monthly book clubs or film nights would help attract new visitors.`},
+{id:'c1-essay', exam:'cam', lvl:'C1', g:'essay', minutes:45, words:[220,260], title:'Encouraging people to read',
+ prompt:`<p>Your class has attended a panel discussion on how governments could encourage adults to read more. You have made the notes below.</p><blockquote><b>Ways governments could encourage reading:</b><br>• public libraries<br>• lower prices for books<br>• national reading campaigns<br><i>Some opinions expressed in the discussion:</i><br>«Libraries are the heart of a community.»<br>«People would read more if books were cheaper.»<br>«Adverts won't change anyone's habits.»</blockquote><p>Write an <b>essay</b> discussing <b>two</b> of the ways in your notes. You should <b>explain which way you think would be more effective</b>, giving reasons in support of your answer.</p>`,
+ model:`Although reading is widely recognised as beneficial, surveys suggest that many adults hardly ever open a book. Governments have several tools at their disposal to change this, and two of the most frequently discussed are investing in public libraries and making books cheaper.
+
+Supporters of lower prices argue that cost is the main barrier. If books were exempt from tax, the reasoning goes, more people would buy them. There is some truth in this, particularly for families on low incomes. However, price alone rarely explains behaviour: many people who could easily afford a novel still choose to spend their free time on their phones. Cheaper books might simply mean that those who already read would buy more.
+
+Public libraries, by contrast, address not only cost but also access and habit. A well-funded library offers books free of charge, but it also offers a quiet place to read, advice from librarians and activities such as book clubs or author talks. Crucially, it reaches people who would never walk into a bookshop, including children, the elderly and newcomers to the country. In this sense, a library does more than supply books: it creates readers.
+
+In conclusion, while reducing prices could be a welcome measure, I believe that investing in libraries would be considerably more effective. Not only do they remove the financial barrier, but they also build the kind of community in which reading becomes a natural part of everyday life.`},
+{id:'c1-proposal', exam:'cam', lvl:'C1', g:'proposal', minutes:45, words:[220,260], title:'Wellbeing at work',
+ prompt:`<p>The company you work for wants to improve the wellbeing of its employees and has invited staff to submit proposals. You decide to write a proposal describing the main problems that affect staff wellbeing at the moment, suggesting <b>two or three changes</b>, and explaining how these changes would benefit both the staff and the company.</p><p>Write your <b>proposal</b>.</p>`,
+ model:`Introduction
+The purpose of this proposal is to identify the main factors affecting staff wellbeing in our department and to suggest practical changes that could be introduced in the coming months.
+
+Current situation
+At present, many employees report feeling under pressure. Meetings frequently run late, messages arrive at all hours, and there is no clear expectation about when staff may disconnect. In addition, the office has very few quiet spaces, which makes concentrated work difficult.
+
+Suggested changes
+Firstly, I would suggest introducing a «no meetings» afternoon each week, allowing everyone to focus on their main tasks without interruption. Secondly, the company could adopt a simple policy stating that emails and chat messages sent after 7 p.m. do not require a reply until the following morning. Finally, one of the smaller meeting rooms could be turned into a quiet room for focused work or short breaks.
+
+Expected benefits
+These measures would not only reduce stress but also improve productivity, as staff would be able to concentrate for longer periods. Furthermore, a company that visibly cares about its employees is more likely to retain experienced staff, which would reduce the considerable costs of recruitment and training.
+
+Conclusion
+None of these changes would require significant investment. I strongly believe that, taken together, they would make a noticeable difference to the wellbeing of the team and, consequently, to the results of the company.`},
+{id:'c1-review', exam:'cam', lvl:'C1', g:'review', minutes:45, words:[220,260], title:'Book or film?',
+ prompt:`<p>An international magazine is running a series called <b>«Book or film?»</b>. Readers are invited to send in a review of a novel that has been made into a film, comparing the two and saying which they think is more successful and why.</p><p>Write your <b>review</b>.</p>`,
+ model:`The Martian: when the film almost beats the book
+
+Andy Weir's The Martian began life as a self-published online novel before becoming a bestseller and, in 2015, a Hollywood blockbuster. Having enjoyed both, I was surprised to find the comparison far closer than I had expected.
+
+The novel is essentially the diary of Mark Watney, an astronaut left alone on Mars after his crew believe he has died. Its greatest strength is its voice: Watney is sarcastic, nerdy and relentlessly practical, and the technical detail, which might sound tedious, is precisely what makes his survival believable. That said, some passages read more like an engineering manual than a story, and readers without a scientific background may find themselves skimming.
+
+Ridley Scott's film wisely trims most of these explanations. Matt Damon captures Watney's humour remarkably well, and the vast red landscapes give a sense of isolation that the book, told almost entirely from inside his head, cannot quite achieve. What is lost, however, is the satisfaction of following each problem to its solution; on screen, success sometimes arrives a little too easily.
+
+So which is better? For sheer entertainment, the film is hard to beat. Yet for anyone who enjoys watching a clever mind at work, the novel remains the richer experience. My advice would be to read the book first, and then watch the film as a reward.`},
+{id:'c1-email', exam:'cam', lvl:'C1', g:'email', minutes:45, words:[220,260], title:'A disappointing online course',
+ prompt:`<p>You recently paid for an online language course, but it was very different from what the website promised. Write a <b>formal email</b> to the company explaining what was advertised, what the problems were and what you would like the company to do.</p>`,
+ model:`Dear Sir or Madam,
+
+I am writing to express my dissatisfaction with the «Fluent in Twelve Weeks» online course, for which I paid €249 on 2 October.
+
+According to your website, the course included weekly live conversation classes with a qualified teacher, personalised feedback on written work within 48 hours and access to a library of over 200 authentic videos. Unfortunately, my experience has been very different.
+
+Firstly, only two of the six live classes have actually taken place; the others were cancelled without notice, and on both occasions the session was led by a different person who did not appear to be a qualified teacher. Secondly, I have submitted four pieces of written work and have received feedback on just one, almost three weeks after sending it. Finally, the video library contains fewer than fifty videos, several of which do not play at all.
+
+I would also like to point out that I contacted your support team on 20 October and have yet to receive a reply.
+
+Given that the course has clearly not been delivered as advertised, I would be grateful if you could refund the full amount. Alternatively, I would be willing to accept a partial refund together with a guarantee that the remaining classes will take place as scheduled.
+
+I look forward to receiving your reply within the next fourteen days.
+
+Yours faithfully,
+Larissa Santos`},
+{id:'ielts-t1', exam:'ielts', lvl:'C1', g:'task1', minutes:20, words:[150,200], title:'Reading habits by age',
+ prompt:`<p>The bar chart below shows the percentage of adults in one European country who read at least one book a month, by age group, in 2015 and 2025.</p><p><b>Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</b></p>
+<figure class="wchart" aria-label="Bar chart"><svg viewBox="0 0 520 280" role="img"><title>Adults reading at least one book a month (%)</title>
+<g font-size="12" fill="currentColor">
+<line x1="50" y1="230" x2="510" y2="230" stroke="currentColor" opacity=".4"/>
+<g opacity=".55"><text x="40" y="234" text-anchor="end">0</text><text x="40" y="184" text-anchor="end">20</text><text x="40" y="134" text-anchor="end">40</text><text x="40" y="84" text-anchor="end">60</text><text x="40" y="34" text-anchor="end">80</text></g>
+<g stroke="currentColor" opacity=".12"><line x1="50" y1="180" x2="510" y2="180"/><line x1="50" y1="130" x2="510" y2="130"/><line x1="50" y1="80" x2="510" y2="80"/><line x1="50" y1="30" x2="510" y2="30"/></g>
+${[['18–24',58,41],['25–34',52,44],['35–49',47,46],['50–64',51,55],['65+',62,68]].map((d,i)=>{const x=70+i*90;return `<rect x="${x}" y="${230-d[1]*2.5}" width="30" height="${d[1]*2.5}" fill="#1E5A43"/><rect x="${x+32}" y="${230-d[2]*2.5}" width="30" height="${d[2]*2.5}" fill="#D9A441"/><text x="${x+15}" y="${224-d[1]*2.5}" text-anchor="middle" font-size="11">${d[1]}</text><text x="${x+47}" y="${224-d[2]*2.5}" text-anchor="middle" font-size="11">${d[2]}</text><text x="${x+31}" y="250" text-anchor="middle">${d[0]}</text>`;}).join('')}
+<rect x="330" y="262" width="12" height="12" fill="#1E5A43"/><text x="348" y="272">2015</text><rect x="400" y="262" width="12" height="12" fill="#D9A441"/><text x="418" y="272">2025</text>
+</g></svg><figcaption class="note">Practice data, invented for this exercise.</figcaption></figure>`,
+ model:`The bar chart compares the proportion of adults in five age groups who read at least one book a month in 2015 and 2025.
+
+Overall, it is clear that reading declined among younger adults over the decade, while it increased among the older age groups. In both years, people aged 65 and over were the most frequent readers.
+
+In 2015, the youngest group, those aged 18 to 24, had a relatively high reading rate of 58%, but this figure fell sharply to 41% in 2025, the largest drop of any group. A smaller decrease was seen among 25- to 34-year-olds, from 52% to 44%. The figure for people aged 35 to 49 remained almost unchanged, at around 46–47%.
+
+By contrast, the two oldest groups read more in 2025 than ten years earlier. The percentage of 50- to 64-year-olds who read monthly rose from 51% to 55%, while the figure for those aged 65 and over increased from 62% to 68%. As a result, by 2025 the oldest adults were reading at a rate roughly two-thirds higher than the youngest.`},
+{id:'ielts-t2', exam:'ielts', lvl:'C1', g:'task2', minutes:40, words:[250,320], title:'Languages and technology',
+ prompt:`<p>Write about the following topic:</p><blockquote><b>Some people believe that learning a foreign language at school is no longer necessary because translation technology is improving so quickly. To what extent do you agree or disagree?</b></blockquote><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.</p>`,
+ model:`In recent years, translation apps have become remarkably accurate, and some people now question whether schools should continue to teach foreign languages. While I accept that technology has made basic communication easier, I strongly disagree that language learning has become unnecessary.
+
+The main reason is that a language is far more than a tool for exchanging information. When we speak to someone in their own language, we build trust in a way that no device can replicate. Business negotiations, friendships and even job interviews depend on humour, tone and cultural references that machines still struggle to convey. A doctor who can reassure a patient directly, for example, offers something an app cannot.
+
+Furthermore, learning a language brings cognitive and educational benefits that go beyond communication. Studies have linked bilingualism to better concentration and problem-solving skills, and students who learn a second language often gain a clearer understanding of the grammar of their own. These advantages would be lost if languages were removed from the curriculum.
+
+Admittedly, translation technology is extremely useful for tourists or for reading simple texts, and it would be unrealistic to expect every student to become fluent. However, this is an argument for teaching languages in a more practical and engaging way, not for abandoning them altogether.
+
+In conclusion, although translation tools will continue to improve, I firmly believe that foreign languages should remain a central part of school education, because they offer personal, professional and intellectual benefits that technology cannot replace.`},
+{id:'b2-article', exam:'cam', lvl:'B2', g:'article', minutes:40, words:[140,190], title:'The best place to study',
+ prompt:`<p>You see this announcement in an English-language magazine for students.</p><blockquote><b>Where do you study best?</b><br>Some people need total silence; others work best in a busy café. Tell us about the place where you study best and explain why it works for you. Is there anything you would change?</blockquote><p>Write your <b>article</b>.</p>`,
+ model:`My secret study spot
+
+Have you ever tried to study at home and ended up cleaning the kitchen instead? I know the feeling. That's why, for the last two years, I've done all my studying in a very unusual place: the café at my local train station.
+
+It sounds crazy, I know. It's noisy, people are always rushing past and the coffee is only average. But believe it or not, that's exactly why it works for me. The background noise is constant, so I stop noticing it after a few minutes, and nobody there knows me, so nobody interrupts me. There's also no washing-up waiting for me!
+
+Another advantage is that I can't stay there forever. After an hour or two, I pack up and go home, so I study in short, intense sessions instead of long, unproductive ones.
+
+If I could change one thing, it would be the chairs, which are terribly uncomfortable. But maybe that's part of the secret too: there's no way I could fall asleep!
+
+So next time you can't concentrate, why not try somewhere completely different?`}
+];
 (function(){
 'use strict';
 const $ = (s,el=document)=>el.querySelector(s);
@@ -3408,7 +3587,7 @@ const KEY='english-notebook-v1';
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ S = {}; }
 function ensureDefaults(){
-  ['lesson','ex','read','write','tab','gen','corr','days','err','errDel','voc','tests','cult','spk','myvoc','log','orale','wpm','asc','exam','examGen','plan','books'].forEach(k=>{ if(!S[k]||typeof S[k]!=='object') S[k]={}; });
+  ['lesson','ex','read','write','tab','gen','corr','days','err','errDel','voc','tests','cult','spk','myvoc','log','orale','wpm','asc','exam','examGen','plan','books','wexam','vsr'].forEach(k=>{ if(!S[k]||typeof S[k]!=='object') S[k]={}; });
   S.verbi=S.verbi||{ok:0,tot:0,best:0}; S.falsi=S.falsi||{best:0};
   S.lab=S.lab||{trad:{ok:0,tot:0},trasf:{ok:0,tot:0},ord:{ok:0,tot:0}};
   S.goal=S.goal||30; S.mastered=S.mastered||0;
@@ -3469,6 +3648,7 @@ function renderNav(route){
    <li><a class="navlink tool" href="#plan" ${route.type==='plan'?'aria-current="page"':''}><span class="n">▦</span><span class="t">My plan<br><small class="note">${planNavNote()}</small></span></a></li>
    <li><a class="navlink tool" href="#books" ${route.type==='books'?'aria-current="page"':''}><span class="n">❧</span><span class="t">Your books<br><small class="note">${BOOKS.map((B,i)=>((S.books&&S.books[i])||0)+'/'+B.ch).join(' · ')} chapters</small></span></a></li>
    <li><a class="navlink tool" href="#review" ${route.type==='ripasso'?'aria-current="page"':''}><span class="n">✎</span><span class="t">Mistakes notebook ${due?`<span class="badge">${due}</span>`:''}<br><small class="note">${Object.keys(S.err).length} to review · ${S.mastered} mastered</small></span></a></li>
+   <li><a class="navlink tool" href="#words" ${route.type==='words'?'aria-current="page"':''}><span class="n">↻</span><span class="t">Word review ${vDue().length?`<span class="badge">${vDue().length}</span>`:''}<br><small class="note">${vStats().all} in review · ${vStats().mastered} mastered</small></span></a></li>
    <li><a class="navlink tool" href="#vocabulary" ${route.type==='lessico'?'aria-current="page"':''}><span class="n">Aa</span><span class="t">Vocabulary by topic<br><small class="note">${LESSICO.reduce((a,t)=>a+t.w.length,0)} words · ${LESSICO.length} topics</small></span></a></li>
    <li><a class="navlink tool" href="#culture" ${route.type==='cultura'?'aria-current="page"':''}><span class="n">❦</span><span class="t">Culture and accents<br><small class="note">${Object.keys(S.cult).filter(k=>S.cult[k]&&S.cult[k].read).length}/${CULTURA.length} cards read</small></span></a></li>
   </ul></div>
@@ -3478,7 +3658,7 @@ function renderNav(route){
    <li><a class="navlink tool" href="#speaking" ${route.type==='parlare'?'aria-current="page"':''}><span class="n">☏</span><span class="t">Speaking<br><small class="note">AI conversation · speaking test</small></span></a></li>
    <li><a class="navlink tool" href="#beyond" ${route.type==='fuori'?'aria-current="page"':''}><span class="n">✚</span><span class="t">Films, books &amp; me<br><small class="note">${Object.keys(S.myvoc).length} my words · study log</small></span></a></li>
   </ul></div>
-  <div class="navgroup"><h4><span>Tests</span></h4><ul><li><a class="navlink tool" href="#exams" ${route.type==='exams'?'aria-current="page"':''}><span class="n">§</span><span class="t">Reading exams<br><small class="note">${EXAMS.length} practices · Cambridge &amp; IELTS</small></span></a></li>${TESTS.map(t=>{ const r=S.tests[t.id]; return `<li><a class="navlink tool" href="#test-${t.id}" ${route.type==='test'&&route.id===t.id?'aria-current="page"':''}><span class="n${t.lvl.length>2?' sm':''}">${r&&r.passed?'✓':t.lvl}</span><span class="t">${t.title} · ${t.range?'':'units '}${tRange(t)}<br><small class="note">${r?'best: '+r.best+'/20':'not taken yet'}</small></span></a></li>`; }).join('')}</ul></div>`;
+  <div class="navgroup"><h4><span>Tests</span></h4><ul><li><a class="navlink tool" href="#exams" ${route.type==='exams'?'aria-current="page"':''}><span class="n">§</span><span class="t">Reading exams<br><small class="note">${EXAMS.length} practices · Cambridge &amp; IELTS</small></span></a></li><li><a class="navlink tool" href="#writing" ${route.type==='writing'?'aria-current="page"':''}><span class="n">✍</span><span class="t">Writing exams<br><small class="note">${WEXAMS.length} tasks · marked by criterion</small></span></a></li>${TESTS.map(t=>{ const r=S.tests[t.id]; return `<li><a class="navlink tool" href="#test-${t.id}" ${route.type==='test'&&route.id===t.id?'aria-current="page"':''}><span class="n${t.lvl.length>2?' sm':''}">${r&&r.passed?'✓':t.lvl}</span><span class="t">${t.title} · ${t.range?'':'units '}${tRange(t)}<br><small class="note">${r?'best: '+r.best+'/20':'not taken yet'}</small></span></a></li>`; }).join('')}</ul></div>`;
   h+=`<div class="navgroup"><h4><span>Tools</span></h4><ul>
    <li><a class="navlink tool" href="#false-friends" ${route.type==='falsi'?'aria-current="page"':''}><span class="n">≠</span><span class="t">False friends<br><small class="note">${FALSI.length} PT/ES traps</small></span></a></li>
    <li><a class="navlink tool" href="#verbs" ${route.type==='verbi'?'aria-current="page"':''}><span class="n">→</span><span class="t">Irregular verbs<br><small class="note">${VKEYS.length} verbs · past &amp; participle</small></span></a></li>
@@ -3505,6 +3685,9 @@ function route(){
   if(h==='exams') return {type:'exams'};
   if(h==='plan') return {type:'plan'};
   if(h==='books') return {type:'books'};
+  if(h==='words') return {type:'words'};
+  if(h==='writing') return {type:'writing'};
+  if((m=h.match(/^writing-([a-z0-9-]+)$/))) return {type:'writing',id:m[1]};
   if((m=h.match(/^books-(\d)$/))) return {type:'books',id:m[1]};
   if((m=h.match(/^exam-([a-z0-9-]+)$/))) return {type:'exams',id:m[1]};
   if(h==='beyond') return {type:'fuori'};
@@ -3515,7 +3698,7 @@ function route(){
 }
 function render(){
   const r=route();
-  stopTestTimer(); stopExamTimer(); stopSpeak(); stopOral();
+  stopTestTimer(); stopExamTimer(); stopWexTimer(); stopSpeak(); stopOral();
   renderNav(r);
   closeNav();
   if(r.type==='unit') renderUnit(UNITS.find(u=>u.id===r.id));
@@ -3533,6 +3716,8 @@ function render(){
   else if(r.type==='exams') renderExams(r.id);
   else if(r.type==='plan') renderPlan();
   else if(r.type==='books') renderBooks(r.id);
+  else if(r.type==='words') renderWords();
+  else if(r.type==='writing') renderWriting(r.id);
   else renderHome();
   window.scrollTo(0,0);
 }
@@ -3574,6 +3759,7 @@ function renderHome(){
    <div class="card"><div class="card-h"><span class="lab">2 · Volume</span></div><h3>Practice until it is automatic</h3><p>Four sets per unit, a translation and rewriting lab in the style of Cambridge exams, ${VKEYS.length} irregular verbs and a button that writes new exercises whenever you want.</p></div>
    <div class="card"><div class="card-h"><span class="lab">3 · Output</span></div><h3>Write, speak and get corrected</h3><p>A writing task per unit with targets counted as you type, red-pen correction, and an AI partner for low-pressure conversation. Nobody is watching: mistakes here are free.</p></div>
   </div>
+  <section class="card examcta"><div><span class="lab">Exam writing</span><h3>Writing exams</h3><p>Essays, e-mails, reviews, reports and proposals in the real Cambridge and IELTS formats, marked criterion by criterion like an examiner.</p></div><a class="btn" href="#writing">Write now →</a></section>
   <section class="card examcta"><div><span class="lab">Your main goal · reading for exams</span><h3>Reading exams</h3><p>Timed practice in the real Cambridge and IELTS formats (multiple choice, gapped text, multiple matching, True/False/Not Given), with an explanation for every answer and unlimited new practices.</p></div><a class="btn primary" href="#exams">Practise now →</a></section>
   <h2 class="sec">Listening and speaking</h2>
   <div class="cols4">
@@ -4182,9 +4368,9 @@ function homeRhythm(){
    <div class="rgrid">
     <div class="card"><span class="lab">Study streak</span><b class="big">${st.cur}<small> ${st.cur===1?'day':'days'}</small></b><span class="note">record: ${st.best} · ${st.total} days studied in total</span></div>
     <div class="card ${due?'due':''}"><span class="lab">Mistakes to review today</span><b class="big">${due}</b><a class="btn ${due?'primary':''}" href="#review">${due?'Review now →':'Open the notebook'}</a></div>
-    <div class="card"><span class="lab">Words you have learnt</span><b class="big">${Object.keys(S.voc).filter(k=>S.voc[k]).length}</b><a class="btn" href="#vocabulary">Vocabulary →</a></div>
+    <div class="card ${vDue().length?'due':''}"><span class="lab">Words to review today</span><b class="big">${vDue().length}</b><a class="btn ${vDue().length?'primary':''}" href="#words">${vDue().length?'Review now →':'Word review'}</a><span class="note">${vStats().mastered} words mastered</span></div>
    </div>
-   <div class="testrow">${TESTS.map(t=>{ const r=S.tests[t.id]; return `<a class="testchip ${r&&r.passed?'passed':''}" href="#test-${t.id}"><b>${t.title}</b><span>${t.range?"Warm-up ":"units "}${tRange(t)} · ${t.lvl}</span><em>${r?(r.passed?'passed · ':'')+r.best+'/20':'to do'}</em></a>`; }).join('')}<a class="testchip lex" href="#exams"><b>Reading exams</b><span>${EXAMS.length} practices</span><em>${Object.keys(S.exam).length} done</em></a></div>
+   <div class="testrow">${TESTS.map(t=>{ const r=S.tests[t.id]; return `<a class="testchip ${r&&r.passed?'passed':''}" href="#test-${t.id}"><b>${t.title}</b><span>${t.range?"Warm-up ":"units "}${tRange(t)} · ${t.lvl}</span><em>${r?(r.passed?'passed · ':'')+r.best+'/20':'to do'}</em></a>`; }).join('')}<a class="testchip lex" href="#exams"><b>Reading exams</b><span>${EXAMS.length} practices</span><em>${Object.keys(S.exam).length} done</em></a><a class="testchip lex" href="#writing"><b>Writing exams</b><span>${WEXAMS.length} tasks</span><em>${Object.values(S.wexam||{}).filter(x=>x.scores).length} marked</em></a></div>
   </section>`;
 }
 
@@ -4231,6 +4417,7 @@ function renderRipasso(){
   const boxes=[0,0,0,0]; all.forEach(k=>boxes[Math.min(3,S.err[k].b)]++);
   $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Every day · review</div><h1 class="title">Mistakes notebook</h1>
    <p class="subtitle">Every wrong answer lands here and comes back after 1, 3, 7 and 15 days. Get it right four times in a row and it counts as mastered.</p></header>
+   ${vDue().length?`<section class="card examcta"><div><span class="lab">Also due today</span><h3>${vDue().length} ${vDue().length===1?'word':'words'} to review</h3><p class="note" style="margin:0">Spaced review of your vocabulary.</p></div><a class="btn primary" href="#words">Word review →</a></section>`:''}
    <div class="rgrid">
     <div class="card ${due.length?'due':''}"><span class="lab">To review today</span><b class="big">${due.length}</b><div class="btnrow"><button class="btn primary" id="rvstart" ${due.length?'':'disabled'}>Start reviewing</button></div></div>
     <div class="card"><span class="lab">Waiting</span><b class="big">${all.length-due.length}</b><button class="btn" id="rvall" ${all.length?'':'disabled'}>Review everything now</button></div>
@@ -4434,8 +4621,8 @@ function renderLessico(id){
        <div class="btnrow" style="justify-content:center;margin-top:16px"><button class="btn" id="lxno">Review</button><button class="btn primary" id="lxyes">I know it ✓</button></div>`;
       $('#lxcard').onclick=()=>{ $('#lxcard').classList.toggle('on'); };
       if(canSpeak) speakSeq([{text:w[0]}]);
-      $('#lxyes').onclick=()=>{ S.voc[w[0]]=true; tick(); save(); pos++; show(); };
-      $('#lxno').onclick=()=>{ S.voc[w[0]]=false; addErr('voc-'+hashStr(w[0]),'vocab',{t:id,i:order[pos]},'Vocabulary · '+T.t); tick(); pos++; show(); };
+      $('#lxyes').onclick=()=>{ S.voc[w[0]]=true; vAdd(vKeyLex(id,order[pos]),1); tick(); save(); pos++; show(); };
+      $('#lxno').onclick=()=>{ S.voc[w[0]]=false; vAdd(vKeyLex(id,order[pos]),0); addErr('voc-'+hashStr(w[0]),'vocab',{t:id,i:order[pos]},'Vocabulary · '+T.t); tick(); pos++; show(); };
     };
     show();
   } else {
@@ -4454,7 +4641,7 @@ function renderLessico(id){
 let syncSt='local', dbRefs=null, pushing=false, pushAgain=false, pushT=null, lastPush=['',''];
 function syncText(){ return {local:'○ Progress saved on this device only',sync:'◌ Syncing…',ok:'● Progress synced to your account',err:'○ Sync failed: trying again at the next save',full:'○ Storage full: progress stays on this device'}[syncSt]; }
 function setSync(st){ syncSt=st; const el=$('#syncline'); if(el){ el.textContent=syncText(); el.className='syncline '+st; } }
-function splitState(){ const o=JSON.parse(JSON.stringify(S)); const texts={write:o.write,corr:o.corr,gen:o.gen,examGen:o.examGen}; delete o.write; delete o.corr; delete o.gen; delete o.examGen; return [JSON.stringify(o),JSON.stringify(texts)]; }
+function splitState(){ const o=JSON.parse(JSON.stringify(S)); const texts={write:o.write,corr:o.corr,gen:o.gen,examGen:o.examGen,wexam:o.wexam}; delete o.write; delete o.corr; delete o.gen; delete o.examGen; delete o.wexam; return [JSON.stringify(o),JSON.stringify(texts)]; }
 function schedulePush(){ if(!dbRefs) return; clearTimeout(pushT); pushT=setTimeout(push,2500); }
 async function push(){
   if(!dbRefs) return; if(pushing){ pushAgain=true; return; }
@@ -4471,7 +4658,7 @@ async function push(){
 function mergeState(a,b){
   const [n,o]=(a.at||0)>=(b.at||0)?[a,b]:[b,a];
   const r=JSON.parse(JSON.stringify(n)), O=JSON.parse(JSON.stringify(o));
-  ['ex','read','corr','gen','lesson','voc','tab','cult','spk','myvoc','orale','wpm','asc','exam','examGen','plan','books'].forEach(f=>{ r[f]=Object.assign({},O[f]||{},r[f]||{}); });
+  ['ex','read','corr','gen','lesson','voc','tab','cult','spk','myvoc','orale','wpm','asc','exam','examGen','plan','books','wexam','vsr'].forEach(f=>{ r[f]=Object.assign({},O[f]||{},r[f]||{}); });
   r.write=Object.assign({},O.write||{},r.write||{});
   Object.keys(O.write||{}).forEach(k=>{ if(O.write[k]&&O.write[k].done&&r.write[k]) r.write[k].done=true; });
   r.days=Object.assign({},O.days||{}); Object.entries(n.days||{}).forEach(([k,v])=>{ r.days[k]=Math.max(v,r.days[k]||0); });
@@ -4485,6 +4672,7 @@ function mergeState(a,b){
   r.lab=r.lab||{}; Object.keys(O.lab||{}).forEach(m=>{ r.lab[m]=r.lab[m]||{ok:0,tot:0}; r.lab[m].ok=Math.max(r.lab[m].ok,O.lab[m].ok||0); r.lab[m].tot=Math.max(r.lab[m].tot,O.lab[m].tot||0); });
   r.tests=Object.assign({},O.tests||{}); Object.entries(n.tests||{}).forEach(([k,v])=>{ const p=r.tests[k]; r.tests[k]=!p?v:{...v,best:Math.max(v.best||0,p.best||0),passed:!!(v.passed||p.passed),pdate:v.pdate||p.pdate,dist:!!(v.dist||p.dist)}; });
   r.plan=Object.assign({},(O.plan||{}),(n.plan||{})); r.plan.tick=Object.assign({},(O.plan&&O.plan.tick)||{},(n.plan&&n.plan.tick)||{});
+  r.vsr=Object.assign({},O.vsr||{}); Object.entries(n.vsr||{}).forEach(([k,v])=>{ if(!r.vsr[k]||(v.u||0)>=(r.vsr[k].u||0)) r.vsr[k]=v; });
   r.name=n.name||o.name; r.at=Math.max(a.at||0,b.at||0);
   return r;
 }
@@ -4924,7 +5112,7 @@ function myWords(fb){
     <form id="mvf" class="mvform"><input id="mv-it" placeholder="English (e.g. to figure out)" required autocomplete="off"><input id="mv-pt" placeholder="português (descobrir, entender)" required autocomplete="off"><input id="mv-ex" placeholder="the sentence where you found it (optional)" autocomplete="off"><select id="mv-src">${SRC.map(s=>`<option value="${s}">${s}</option>`).join('')}</select><button class="btn primary" type="submit">Add</button></form></section>
    ${ids.length?`<div class="btnrow" style="margin-bottom:12px"><button class="btn primary" id="mvrev" type="button">Review my words</button><input id="mvq" class="vsel" placeholder="Search…" autocomplete="off"></div><section class="card" id="mvcard" hidden></section>
    <div class="tw"><table class="tbl lextbl" id="mvtbl">${ids.map(k=>{ const w=S.myvoc[k]; return `<tr data-k="${k}"><td>${canSpeak?`<button class="btn ghost play" type="button" data-say="${k}">▶</button>`:''}<b>${esc(w.it)}</b></td><td class="pt">${esc(w.pt)}</td><td><i>${esc(w.ex||'')}</i></td><td class="note">${esc(w.src||'')}</td><td><button class="btn ghost" type="button" data-del="${k}">Remove</button></td></tr>`; }).join('')}</table></div>`:'<p class="note">No words yet. Add the words and expressions you meet in films, series and books (5 per episode is a good habit): you review them here and, if you get them wrong, they come back in the mistakes notebook.</p>'}`;
-  $('#mvf').onsubmit=e=>{ e.preventDefault(); const it=$('#mv-it').value.trim(), pt=$('#mv-pt').value.trim(); if(!it||!pt) return; const k='w'+Date.now().toString(36); S.myvoc[k]={it,pt,ex:$('#mv-ex').value.trim(),src:$('#mv-src').value,d:Date.now()}; tick(); save(); myWords(fb); setTimeout(()=>$('#mv-it')&&$('#mv-it').focus(),0); };
+  $('#mvf').onsubmit=e=>{ e.preventDefault(); const it=$('#mv-it').value.trim(), pt=$('#mv-pt').value.trim(); if(!it||!pt) return; const k='w'+Date.now().toString(36); vAdd('my:'+k,0); S.myvoc[k]={it,pt,ex:$('#mv-ex').value.trim(),src:$('#mv-src').value,d:Date.now()}; tick(); save(); myWords(fb); setTimeout(()=>$('#mv-it')&&$('#mv-it').focus(),0); };
   fb.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ const k=b.dataset.del; delete S.myvoc[k]; removeErr('my-'+k); save(); myWords(fb); });
   fb.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>speakSeq([{text:S.myvoc[b.dataset.say].it}]));
   const q=$('#mvq'); if(q) q.oninput=()=>{ const v=q.value.toLowerCase(); fb.querySelectorAll('#mvtbl tr').forEach(tr=>{ tr.hidden=v&&!tr.textContent.toLowerCase().includes(v); }); };
@@ -5207,7 +5395,7 @@ function buildPlan(){
   let ex=0, lexI=0, examI=0;
   const nextExtra=()=>extras[ex++%extras.length];
   const L=(u,tab,t,m,auto)=>({t,m,href:'#unit-'+u.id,tab,u:u.id,auto});
-  const review={t:'Mistakes notebook: review what is due today',m:5,href:'#review'};
+  const review={t:'Review: mistakes and words due today',m:5,href:'#review'};
   const verbs={t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'};
   const setTask=(u,i)=>{ const s=u.ex[i]; return L(u,'esercizi',`Exercises, set ${String.fromCharCode(65+i)}: ${s.title}`,SET_MIN[s.t]||6,()=>!!S.ex[u.id+'-'+i]); };
   const push=(kind,label,unit,tasks)=>out.push({kind,label,unit,tasks});
@@ -5230,6 +5418,10 @@ function buildPlan(){
     push('unit',`${n} · day 6 of 6`,u,[L(u,'scrittura','Writing: red-pen correction, rewrite and mark it complete',15,()=>!!(S.write[u.id]&&S.write[u.id].done)),nextExtra()]);
     const E=EXAMS[examI++];
     push('exam','Reading exam practice',null,[E?{t:`Reading exam: «${E.title}» (${EXAM_TYPES[E.type].exam}, timed)`,m:E.minutes,href:'#exam-'+E.id,auto:()=>!!S.exam[E.id]}:{t:'Reading exam: generate a new practice (C1, any format) and do it timed',m:18,href:'#exams'},review]);
+    const WX={3:'b2-essay',6:'b2-review',9:'c1-essay',12:'ielts-t2'}[u.id];
+    if(WX){ const W=WEXAMS.find(x=>x.id===WX), st=()=>(S.wexam&&S.wexam[WX])||{};
+      push('wexam','Writing exam · day 1 of 2',null,[{t:`Writing exam: «${W.title}» (${wexLabel(W)}). Read the task and the guide, plan and write. Stop at 25 minutes.`,m:25,href:'#writing-'+WX,auto:()=>wc(st().text)>=Math.round(W.words[0]*.6)}]);
+      push('wexam','Writing exam · day 2 of 2',null,[{t:'Finish the text (10 min max), then mark it like an examiner',m:15,href:'#writing-'+WX,auto:()=>!!st().scores},{t:'Read the improved version and the model answer',m:10,href:'#writing-'+WX}]); }
     if(u.id===6||u.id===12){ const T=TESTS[u.id===6?1:2]; push('test',T.title,null,[{t:`${T.title}: reading, open cloze and grammar (timed)`,m:30,href:'#test-'+T.id,auto:()=>!!S.tests[T.id]}]); }
   });
   let band=0; out.forEach((s,i)=>{ s.idx=i; s.min=s.tasks.reduce((a,t)=>a+t.m,0); if(s.unit) band=s.unit.band; s.band=band; });
@@ -5387,6 +5579,165 @@ function renderBooks(id){
   const set=v=>{ S.books=S.books||{}; S.books[i]=Math.max(0,Math.min(B.ch,v)); save(); renderBooks(i); renderNav(route()); };
   $('#bplus').onclick=()=>{ tick(1); set(read+1); if(read+1===B.ch) toast(`<span class="pen">Book finished!</span> ${esc(B.title)}`); };
   $('#bminus').onclick=()=>set(read-1);
+}
+/* end */
+
+/* ---------- SPACED VOCABULARY REVIEW ---------- */
+const VGAP=[1,3,7,15];
+function vsr(){ S.vsr=S.vsr||{}; return S.vsr; }
+function vKeyLex(t,i){ return 'lex:'+hashStr(LESSICO[t].w[i][0]); }
+function vWord(k){
+  if(k.startsWith('my:')){ const w=S.myvoc[k.slice(3)]; return w?{en:w.it,pt:w.pt,ex:w.ex||'',src:'My words'}:null; }
+  if(k.startsWith('lex:')){ for(let t=0;t<LESSICO.length;t++){ const i=LESSICO[t].w.findIndex(w=>'lex:'+hashStr(w[0])===k); if(i>=0){ const w=LESSICO[t].w[i]; return {en:w[0],pt:w[1],ex:w[2],src:LESSICO[t].t,t,i}; } } }
+  return null;
+}
+function vAdd(k,box){ const V=vsr(); if(V[k]&&!V[k].m) return; const b=box||0; V[k]={b,due:addDays(VGAP[b]),u:Date.now()}; save(); }
+function vDue(){ const t=dayKey(), V=vsr(); return Object.keys(V).filter(k=>!V[k].m&&V[k].due<=t&&vWord(k)); }
+function vStats(){ const V=vsr(), ks=Object.keys(V).filter(k=>vWord(k)); return {all:ks.filter(k=>!V[k].m).length, mastered:ks.filter(k=>V[k].m).length, due:vDue().length}; }
+function vAnswer(k,ok){
+  const V=vsr(), e=V[k]; if(!e) return;
+  if(ok){ e.b++; if(e.b>=VGAP.length){ e.m=dayKey(); } else e.due=addDays(VGAP[e.b]); }
+  else { e.b=0; e.due=addDays(1); }
+  e.u=Date.now(); save();
+}
+let vQueue=null, vPos=0, vOk=0;
+function renderWords(){
+  const st=vStats(), V=vsr();
+  const boxes=[0,0,0,0]; Object.keys(V).forEach(k=>{ if(!V[k].m&&vWord(k)) boxes[Math.min(3,V[k].b)]++; });
+  $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Every day · vocabulary</div><h1 class="title">Word review</h1>
+   <p class="subtitle">Words come back after 1, 3, 7 and 15 days. You see the Portuguese and type the English. Right: the word moves to the next box. Wrong: it comes back tomorrow. After the 15-day box, it is yours.</p></header>
+   <div class="rgrid">
+    <div class="card ${st.due?'due':''}"><span class="lab">Due today</span><b class="big">${st.due}</b><button class="btn ${st.due?'primary':''}" id="vgo" type="button" ${st.due?'':'disabled'}>Review now</button></div>
+    <div class="card"><span class="lab">In review</span><b class="big">${st.all}</b><span class="note">words being learnt</span></div>
+    <div class="card"><span class="lab">Mastered</span><b class="big">${st.mastered}</b><span class="note">survived all four boxes</span></div>
+   </div>
+   <div class="boxes">${boxes.map((n,i)=>`<div class="box"><span class="lab">Box ${i+1}</span><b>${n}</b><span class="note">back in ${VGAP[i]} ${VGAP[i]===1?'day':'days'}</span></div>`).join('')}</div>
+   <section class="card" id="vcard" hidden></section>
+   <section class="card"><div class="card-h"><div><span class="lab">Add words</span><h3>Where the words come from</h3></div></div>
+    <ul class="dots"><li>Every word you add to <a href="#beyond">My words</a> enters automatically (back tomorrow).</li><li>In <a href="#vocabulary">Vocabulary by topic</a>, the cards you answer enter by themselves: «Review» comes back tomorrow, «I know it» in 3 days.</li><li>Or add a whole topic at once:</li></ul>
+    <div class="chipsel" id="vtopics">${LESSICO.map((T,t)=>{ const n=T.w.filter((_,i)=>V[vKeyLex(t,i)]).length; return `<button type="button" data-t="${t}" aria-pressed="${n===T.w.length}">${esc(T.t)} · ${n}/${T.w.length}</button>`; }).join('')}</div></section>`;
+  $('#vtopics').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ const t=+b.dataset.t; LESSICO[t].w.forEach((_,i)=>vAdd(vKeyLex(t,i),0)); toast(`<span class="pen">Added:</span> ${esc(LESSICO[t].t)}. The first words come back tomorrow.`); renderWords(); renderNav(route()); });
+  const go=$('#vgo'); if(go) go.onclick=()=>{ vQueue=shuffle(vDue()).slice(0,30); vPos=0; vOk=0; vShow(); };
+}
+function vShow(){
+  const c=$('#vcard'); if(!c) return; c.hidden=false;
+  if(vPos>=vQueue.length){ c.innerHTML=`<div class="drill"><div class="pen" style="font-size:38px">Done!</div><p class="lead" style="margin:8px auto">${vOk} right out of ${vQueue.length}.</p><button class="btn primary" id="vback" type="button">Back</button></div>`; $('#vback').onclick=()=>{ renderWords(); renderNav(route()); }; return; }
+  const k=vQueue[vPos], w=vWord(k), e=vsr()[k];
+  c.innerHTML=`<div class="card-h"><span class="lab">${vPos+1}/${vQueue.length} · ${esc(w.src)} · box ${e.b+1}</span></div><div class="drill" style="padding:6px 0"><span class="lab">how do you say it in English?</span><div class="verb" style="font-size:32px">${esc(w.pt)}</div><input id="vin" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="answer"><div class="fb" id="vfb"></div></div><div class="btnrow" style="justify-content:center"><button class="btn primary" id="vchk" type="button">Check</button><button class="btn" id="vnext" type="button" hidden>Next →</button></div>`;
+  const inp=$('#vin'); inp.focus({preventScroll:true}); let done=false;
+  const check=()=>{ if(done){ vPos++; vShow(); return; } if(!inp.value.trim()) return; done=true;
+    const r=judge(inp.value,[w.en,w.en.replace(/^(the|a|an|to)\s+/i,''),...w.en.split(/\s*\/\s*/)]); const ok=r!=='no';
+    vAnswer(k,ok); if(ok) vOk++; tick();
+    $('#vfb').innerHTML=(ok?`<span class="mark ok">Right! ✓</span>${r==='acc'?` <span class="note">${esc(w.en)}</span>`:''}`:`<span class="mark no">${esc(w.en)}</span>`)+(w.ex?`<p class="expl">${esc(w.ex)}</p>`:'')+`<p class="note">${ok?(vsr()[k].m?'Mastered! It will not come back.':'Back in '+VGAP[vsr()[k].b]+' days.'):'Back tomorrow.'} Enter to continue.</p>`;
+    inp.style.color=ok?'var(--verde)':'var(--rosso)'; $('#vchk').hidden=true; $('#vnext').hidden=false; if(canSpeak) speakSeq([{text:w.en}]); };
+  inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); check(); } });
+  $('#vchk').onclick=check; $('#vnext').onclick=check;
+}
+/* end */
+
+/* ---------- WRITING EXAMS ---------- */
+const WCRIT={cam:['Content','Communicative achievement','Organisation','Language'],ielts:['Task achievement / response','Coherence and cohesion','Lexical resource','Grammatical range and accuracy']};
+const WEXAM_NAME={cam:'Cambridge',ielts:'IELTS'};
+let wexTimer=null, wexFilter='all';
+function stopWexTimer(){ if(wexTimer){ clearInterval(wexTimer); wexTimer=null; } }
+function wexState(id){ S.wexam=S.wexam||{}; return S.wexam[id]=S.wexam[id]||{}; }
+function wexLabel(W){ return W.exam==='ielts'?`IELTS ${W.g==='task1'?'Task 1':'Task 2'}`:`Cambridge ${W.lvl==='B2'?'B2 First':'C1 Advanced'}`; }
+function wexScoreTxt(W,st){ if(!st||!st.scores) return ''; return W.exam==='ielts'?`band ${st.band}`:`${st.total}/20`; }
+function renderWriting(id){
+  stopWexTimer();
+  if(id) return renderWex(id);
+  const card=W=>{ const st=S.wexam&&S.wexam[W.id]; return `<a class="card lexcard" href="#writing-${W.id}"><span class="lab">${W.lvl} · ${wexLabel(W)}</span><h3>${esc(W.title)}</h3><span class="note">${WGENRE[W.g].name} · ${W.words[0]}–${W.words[1]} words · ${W.minutes} min</span><span class="note">${st&&st.scores?`<b>best: ${esc(wexScoreTxt(W,st))}</b>`:st&&wc(st.text)?'draft started':'not written yet'}</span></a>`; };
+  const list=WEXAMS.filter(W=>wexFilter==='all'||(wexFilter==='ielts'?W.exam==='ielts':W.exam==='cam'&&W.lvl===wexFilter));
+  $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Tests · writing for exams</div><h1 class="title">Writing exams</h1>
+   <p class="subtitle">Real exam tasks from Cambridge B2 First, C1 Advanced and IELTS. Write under exam conditions, then get a mark for each criterion, exactly as an examiner would give it, with corrections and a model answer.</p></header>
+   <div class="chipsel" id="wxf" style="margin-bottom:16px">${[['all','all'],['B2','Cambridge B2'],['C1','Cambridge C1'],['ielts','IELTS']].map(([k,l])=>`<button data-f="${k}" aria-pressed="${wexFilter===k}">${l}</button>`).join('')}</div>
+   <div class="lexgrid">${list.map(card).join('')}</div>
+   <h2 class="sec" style="margin-top:30px">How each text type works</h2>
+   ${Object.entries(WGENRE).map(([k,G])=>`<section class="card"><div class="card-h"><div><span class="lab">Text type</span><h3>${G.name}</h3></div></div><p>${G.guide}</p><div class="chips">${G.ph.map(esc).join(' · ')}</div></section>`).join('')}
+   <section class="card"><div class="card-h"><div><span class="lab">How you are marked</span><h3>The criteria</h3></div></div>
+    <p><b>Cambridge</b> (B2 First, C1 Advanced): four criteria, 0 to 5 each, 20 in total. <b>Content</b> (did you answer everything?), <b>Communicative achievement</b> (right register and tone for the reader), <b>Organisation</b> (paragraphs and linking), <b>Language</b> (range and accuracy of vocabulary and grammar). Around 12/20 is a pass at the level.</p>
+    <p><b>IELTS</b>: four criteria, band 0 to 9 each; the final band is the average. <b>Task achievement/response</b>, <b>Coherence and cohesion</b>, <b>Lexical resource</b>, <b>Grammatical range and accuracy</b>. Band 7 is the usual target for university and work abroad.</p></section>`;
+  $('#wxf').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ wexFilter=b.dataset.f; renderWriting(); });
+}
+function wexPrompt(W,text){
+  const crit=WCRIT[W.exam], lang=aiLang({band:1})==='pt'?'PORTUGUESE (examples in English)':'clear ENGLISH';
+  const scale=W.exam==='ielts'?'IELTS band descriptors, 0-9 per criterion (half bands allowed only for the overall)':'Cambridge assessment scale, 0-5 per criterion';
+  return `You are an experienced, strict but encouraging ${W.exam==='ielts'?'IELTS':'Cambridge English '+(W.lvl==='B2'?'B2 First':'C1 Advanced')} writing examiner. Mark this text written by a Brazilian adult (native Portuguese, fluent Spanish) exactly as in the real exam, using the ${scale}.
+Task type: ${WGENRE[W.g].name}. Required length: ${W.words[0]}-${W.words[1]} words${W.exam==='ielts'&&W.g==='task1'?' (minimum 150)':W.exam==='ielts'?' (minimum 250)':''}.
+TASK:
+${plain(W.prompt).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,1500)}
+
+Answer in ${lang}, with exactly these markdown sections:
+## Marks
+One line per criterion: «${crit[0]}: X — one-sentence justification», and the same for ${crit.slice(1).join(', ')}. Then the ${W.exam==='ielts'?'overall band':'total out of 20'} and whether this would pass at ${W.exam==='ielts'?'band 7':W.lvl}.
+## What would raise your mark
+The 3 most important, concrete changes, in order of impact.
+## Mistakes
+Each mistake as: ~~wrong~~ → **right**: short explanation. Mark [PT] or [ES] for interference.
+## Improved version
+The whole text rewritten at a higher level, keeping her ideas.
+
+On the very last line, write only: SCORES ${W.exam==='ielts'?'{"scores":[n,n,n,n],"band":n}':'{"scores":[n,n,n,n],"total":n}'}
+
+STUDENT'S TEXT:
+"""${text}"""`;
+}
+function renderWex(id){
+  const W=WEXAMS.find(x=>x.id===id); if(!W){ location.hash='writing'; return; }
+  const G=WGENRE[W.g], st=wexState(id);
+  $('#main').innerHTML=`<header class="uhead"><div class="eyebrow"><a href="#writing">Writing exams</a> · ${W.lvl} · ${wexLabel(W)}</div><h1 class="title">${esc(W.title)}</h1>
+   <p class="subtitle">${G.name} · ${W.words[0]}–${W.words[1]} words · ${W.minutes} minutes${st.scores?' · best '+esc(wexScoreTxt(W,st)):''}</p></header>
+   <section class="card task wtask">${W.prompt}</section>
+   <details class="card"><summary><b>How to write it: ${G.name}</b> (open before you start)</summary><p>${G.guide}</p><div class="chips">${G.ph.map(esc).join(' · ')}</div></details>
+   <div class="timer" id="wxtimer" hidden><span>Time left <b id="wxleft"></b></span><button class="btn" id="wxstop" type="button">Stop the clock</button></div>
+   <div class="btnrow" style="margin:6px 0 10px"><button class="btn primary" id="wxgo" type="button">Start · exam conditions (${W.minutes} min)</button><span class="note">or just start writing below, without a clock</span></div>
+   <textarea class="paper" id="wxtext" spellcheck="false" lang="en" placeholder="Write your ${esc(G.name.toLowerCase())} here…">${esc(st.text||'')}</textarea>
+   <p class="wc" id="wxwc"></p>
+   <div class="btnrow"><button class="btn red" id="wxcorr" type="button">Mark it like an examiner</button><button class="btn" id="wxmodel" type="button">See the model answer</button><span class="note">Correction in: <button class="btn ghost" id="wxlang" type="button">${aiLang({band:1})==='pt'?'Portuguese':'English'}</button></span></div>
+   <div class="model" id="wxmodelbox" hidden>${esc(W.model)}</div>
+   <div id="wxout">${st.corr?`<div class="ai-out"><div class="stamp">Last marking · ${esc(wexScoreTxt(W,st))}</div>${wexScoresHTML(W,st)}${md(st.corr)}</div>`:''}</div>
+   ${st.hist&&st.hist.length>1?`<p class="note">Previous marks: ${st.hist.map(h=>esc(h)).join(' → ')}</p>`:''}`;
+  const ta=$('#wxtext');
+  const upd=()=>{ const n=wc(ta.value); const [a,b]=W.words; $('#wxwc').innerHTML=`<b>${n}</b> words · target ${a}–${b}${n&&n<a?' · <span style="color:var(--rosso)">too short</span>':n>b+20?' · <span style="color:var(--ambra)">a little long</span>':''}`; };
+  upd();
+  let tT; ta.oninput=()=>{ upd(); clearTimeout(tT); tT=setTimeout(()=>{ st.text=ta.value; save(); },400); };
+  $('#wxmodel').onclick=()=>{ const b=$('#wxmodelbox'); b.hidden=!b.hidden; $('#wxmodel').textContent=b.hidden?'See the model answer':'Hide the model answer'; };
+  $('#wxlang').onclick=()=>{ S.aiLang=aiLang({band:1})==='pt'?'en':'pt'; save(); $('#wxlang').textContent=S.aiLang==='pt'?'Portuguese':'English'; };
+  $('#wxgo').onclick=()=>{ const end=Date.now()+W.minutes*60000; $('#wxtimer').hidden=false; $('#wxgo').parentElement.hidden=true; ta.focus();
+    const tickT=()=>{ const el=$('#wxleft'); if(!el){ stopWexTimer(); return; } const left=Math.max(0,end-Date.now()); el.textContent=`${Math.floor(left/60000)}:${String(Math.floor(left%60000/1000)).padStart(2,'0')}`; $('#wxtimer').classList.toggle('low',left<5*60000); if(left<=0){ stopWexTimer(); el.textContent='time is up'; toast('<span class="pen">Time is up!</span> Finish your sentence and ask for the marking.'); } };
+    stopWexTimer(); tickT(); wexTimer=setInterval(tickT,1000); };
+  $('#wxstop').onclick=()=>{ stopWexTimer(); $('#wxtimer').hidden=true; $('#wxgo').parentElement.hidden=false; };
+  $('#wxcorr').onclick=async()=>{
+    const text=ta.value.trim(), out=$('#wxout'); st.text=ta.value; save();
+    if(wc(text)<Math.round(W.words[0]*.6)){ out.innerHTML=`<div class="ai-out"><p>Write at least ${Math.round(W.words[0]*.6)} words before asking for a mark.</p></div>`; return; }
+    stopWexTimer();
+    const prompt=wexPrompt(W,text), sample=await getSample();
+    if(!sample){ out.innerHTML=`<div class="ai-out fallback"><p>Marking only works with this page open inside Claude. Copy the request below and paste it into a chat with Claude.</p><textarea readonly id="wxfb">${esc(prompt)}</textarea><div class="btnrow" style="margin-top:8px"><button class="btn" id="wxcopy" type="button">Copy the request</button><span class="note" id="wxcm"></span></div></div>`;
+      $('#wxcopy').onclick=()=>{ const t=$('#wxfb'); navigator.clipboard.writeText(t.value).then(()=>$('#wxcm').textContent='Copied.',()=>{ t.select(); $('#wxcm').textContent='Selected: press Ctrl+C / Cmd+C.'; }); }; return; }
+    const btn=$('#wxcorr'); btn.disabled=true;
+    out.innerHTML=`<div class="ai-out"><div class="stamp">The examiner is reading…</div><div id="wxb"></div><div class="btnrow" style="margin-top:10px"><button class="btn" id="wxab" type="button">Stop</button></div></div>`;
+    const ctl=new AbortController(); $('#wxab').onclick=()=>ctl.abort();
+    const strip=t=>t.replace(/\n?\s*SCORES\s*\{[\s\S]*$/,'').trim();
+    try{
+      const r=await sample(prompt,{cache:false,modelTier:'complex',signal:ctl.signal,onText:({text})=>{ const b=$('#wxb'); if(b) b.innerHTML=md(strip(text)); }});
+      const m=r.text.match(/SCORES\s*(\{[\s\S]*?\})/); let sc=null; try{ sc=m?JSON.parse(m[1]):null; }catch(e){}
+      st.corr=strip(r.text);
+      if(sc&&Array.isArray(sc.scores)&&sc.scores.length===4){
+        st.scores=sc.scores.map(Number);
+        if(W.exam==='ielts'){ const b=Number(sc.band)||Math.round(st.scores.reduce((a,x)=>a+x,0)/4*2)/2; st.lastBand=b; st.band=Math.max(st.band||0,b); }
+        else { const t=Number(sc.total)||st.scores.reduce((a,x)=>a+x,0); st.last=t; st.total=Math.max(st.total||0,t); }
+        st.hist=(st.hist||[]).concat([W.exam==='ielts'?'band '+(st.lastBand):st.last+'/20']).slice(-8);
+      }
+      st.d=Date.now(); tick(10); save(); renderNav(route());
+      out.innerHTML=`<div class="ai-out"><div class="stamp">Marked ✓${st.scores?' · '+esc(W.exam==='ielts'?'band '+st.lastBand:st.last+'/20'):''}</div>${wexScoresHTML(W,st)}${md(st.corr)}</div>`;
+    }catch(e){ const b=$('#wxb'); if(b&&e.text) b.innerHTML=md(strip(e.text)); const s=out.querySelector('.stamp'); if(s) s.textContent=e.code==='cancelled'?'Marking stopped':errMsg(e); const ab=$('#wxab'); ab&&ab.remove(); }
+    btn.disabled=false;
+  };
+}
+function wexScoresHTML(W,st){
+  if(!st.scores) return '';
+  const max=W.exam==='ielts'?9:5;
+  return `<div class="wscores">${WCRIT[W.exam].map((c,i)=>`<div class="wsc"><span class="lab">${esc(c)}</span><span class="rw-bar"><i style="width:${Math.round(100*(st.scores[i]||0)/max)}%"></i></span><b>${st.scores[i]}<small>/${max}</small></b></div>`).join('')}</div>`;
 }
 /* end */
 

@@ -14,7 +14,7 @@ function buildPlan(){
   let ex=0, lexI=0, examI=0;
   const nextExtra=()=>extras[ex++%extras.length];
   const L=(u,tab,t,m,auto)=>({t,m,href:'#unit-'+u.id,tab,u:u.id,auto});
-  const review={t:'Mistakes notebook: review what is due today',m:5,href:'#review'};
+  const review={t:'Review: mistakes and words due today',m:5,href:'#review'};
   const verbs={t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'};
   const setTask=(u,i)=>{ const s=u.ex[i]; return L(u,'esercizi',`Exercises, set ${String.fromCharCode(65+i)}: ${s.title}`,SET_MIN[s.t]||6,()=>!!S.ex[u.id+'-'+i]); };
   const push=(kind,label,unit,tasks)=>out.push({kind,label,unit,tasks});
@@ -37,6 +37,10 @@ function buildPlan(){
     push('unit',`${n} · day 6 of 6`,u,[L(u,'scrittura','Writing: red-pen correction, rewrite and mark it complete',15,()=>!!(S.write[u.id]&&S.write[u.id].done)),nextExtra()]);
     const E=EXAMS[examI++];
     push('exam','Reading exam practice',null,[E?{t:`Reading exam: «${E.title}» (${EXAM_TYPES[E.type].exam}, timed)`,m:E.minutes,href:'#exam-'+E.id,auto:()=>!!S.exam[E.id]}:{t:'Reading exam: generate a new practice (C1, any format) and do it timed',m:18,href:'#exams'},review]);
+    const WX={3:'b2-essay',6:'b2-review',9:'c1-essay',12:'ielts-t2'}[u.id];
+    if(WX){ const W=WEXAMS.find(x=>x.id===WX), st=()=>(S.wexam&&S.wexam[WX])||{};
+      push('wexam','Writing exam · day 1 of 2',null,[{t:`Writing exam: «${W.title}» (${wexLabel(W)}). Read the task and the guide, plan and write. Stop at 25 minutes.`,m:25,href:'#writing-'+WX,auto:()=>wc(st().text)>=Math.round(W.words[0]*.6)}]);
+      push('wexam','Writing exam · day 2 of 2',null,[{t:'Finish the text (10 min max), then mark it like an examiner',m:15,href:'#writing-'+WX,auto:()=>!!st().scores},{t:'Read the improved version and the model answer',m:10,href:'#writing-'+WX}]); }
     if(u.id===6||u.id===12){ const T=TESTS[u.id===6?1:2]; push('test',T.title,null,[{t:`${T.title}: reading, open cloze and grammar (timed)`,m:30,href:'#test-'+T.id,auto:()=>!!S.tests[T.id]}]); }
   });
   let band=0; out.forEach((s,i)=>{ s.idx=i; s.min=s.tasks.reduce((a,t)=>a+t.m,0); if(s.unit) band=s.unit.band; s.band=band; });
