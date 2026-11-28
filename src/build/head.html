@@ -550,6 +550,8 @@ details.card summary{cursor:pointer}
 .lg.late{background:var(--rosso-soft);border-color:var(--rosso)}
 .lg.today{box-shadow:0 0 0 2px var(--brass)}
 #pstart{max-width:180px}
+.cday.work{background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 14%,transparent) 6px 8px)}
+.lg.work{background:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--muted) 30%,transparent) 3px 4px)}
 @media (max-width:600px){ .cday{min-height:48px;padding:4px} .cday .cs{font-size:9.5px} .cday .cd{font-size:15px} .phasebar{grid-template-columns:minmax(0,1fr)} .ptasks li{grid-template-columns:30px minmax(0,1fr)} .ptasks li .btn{grid-column:2;justify-self:start;padding-left:0} }
 
 /* books */
@@ -594,6 +596,20 @@ body.trmode #main p:hover,body.trmode #main li:hover,body.trmode #main .q:hover,
 .trs-pt{font-size:16px;margin-bottom:10px}
 .trs-pt p{margin:0 0 4px}
 @media print{.trbtn,.trchip,.trsheet,.trbar{display:none}}
+
+/* flashcards */
+.decks{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.decks label{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--card)}
+.decks label span{display:grid;gap:2px}
+.decks input{margin-top:3px;accent-color:var(--blu)}
+.ankic input{margin-top:14px}
+.ankiback{font-family:var(--f-display);font-size:30px;font-weight:600;color:var(--blu);margin-top:14px}
+.ankibtns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:520px;margin:6px auto 0}
+.ankibtns .btn{display:grid;justify-items:center;gap:2px;border-radius:12px;padding:8px 6px}
+.ankibtns small{font-size:11.5px;color:var(--muted);font-weight:500}
+.ankibtns .g0{border-color:var(--rosso);color:var(--rosso)}
+.ankibtns .g2{border-color:var(--verde);color:var(--verde)}
+.ankibtns .g3{border-color:var(--blu);color:var(--blu)}
 </style>
 
 <div class="app">

@@ -40,7 +40,7 @@ function homeRhythm(){
    <div class="rgrid">
     <div class="card"><span class="lab">Study streak</span><b class="big">${st.cur}<small> ${st.cur===1?'day':'days'}</small></b><span class="note">record: ${st.best} · ${st.total} days studied in total</span></div>
     <div class="card ${due?'due':''}"><span class="lab">Mistakes to review today</span><b class="big">${due}</b><a class="btn ${due?'primary':''}" href="#review">${due?'Review now →':'Open the notebook'}</a></div>
-    <div class="card ${vDue().length?'due':''}"><span class="lab">Words to review today</span><b class="big">${vDue().length}</b><a class="btn ${vDue().length?'primary':''}" href="#words">${vDue().length?'Review now →':'Word review'}</a><span class="note">${vStats().mastered} words mastered</span></div>
+    <div class="card ${vDue().length?'due':''}"><span class="lab">Flashcards for today</span><b class="big">${vDue().length}</b><a class="btn ${vDue().length?'primary':''}" href="#words">${vDue().length?'Study now →':'Flashcards'}</a><span class="note">${vStats().mastered} mature cards</span></div>
    </div>
    <div class="testrow">${TESTS.map(t=>{ const r=S.tests[t.id]; return `<a class="testchip ${r&&r.passed?'passed':''}" href="#test-${t.id}"><b>${t.title}</b><span>${t.range?"Warm-up ":"units "}${tRange(t)} · ${t.lvl}</span><em>${r?(r.passed?'passed · ':'')+r.best+'/20':'to do'}</em></a>`; }).join('')}<a class="testchip lex" href="#exams"><b>Reading exams</b><span>${EXAMS.length} practices</span><em>${Object.keys(S.exam).length} done</em></a><a class="testchip lex" href="#writing"><b>Writing exams</b><span>${WEXAMS.length} tasks</span><em>${Object.values(S.wexam||{}).filter(x=>x.scores).length} marked</em></a></div>
   </section>`;

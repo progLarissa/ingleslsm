@@ -550,6 +550,8 @@ details.card summary{cursor:pointer}
 .lg.late{background:var(--rosso-soft);border-color:var(--rosso)}
 .lg.today{box-shadow:0 0 0 2px var(--brass)}
 #pstart{max-width:180px}
+.cday.work{background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 14%,transparent) 6px 8px)}
+.lg.work{background:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--muted) 30%,transparent) 3px 4px)}
 @media (max-width:600px){ .cday{min-height:48px;padding:4px} .cday .cs{font-size:9.5px} .cday .cd{font-size:15px} .phasebar{grid-template-columns:minmax(0,1fr)} .ptasks li{grid-template-columns:30px minmax(0,1fr)} .ptasks li .btn{grid-column:2;justify-self:start;padding-left:0} }
 
 /* books */
@@ -594,6 +596,20 @@ body.trmode #main p:hover,body.trmode #main li:hover,body.trmode #main .q:hover,
 .trs-pt{font-size:16px;margin-bottom:10px}
 .trs-pt p{margin:0 0 4px}
 @media print{.trbtn,.trchip,.trsheet,.trbar{display:none}}
+
+/* flashcards */
+.decks{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.decks label{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--card)}
+.decks label span{display:grid;gap:2px}
+.decks input{margin-top:3px;accent-color:var(--blu)}
+.ankic input{margin-top:14px}
+.ankiback{font-family:var(--f-display);font-size:30px;font-weight:600;color:var(--blu);margin-top:14px}
+.ankibtns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:520px;margin:6px auto 0}
+.ankibtns .btn{display:grid;justify-items:center;gap:2px;border-radius:12px;padding:8px 6px}
+.ankibtns small{font-size:11.5px;color:var(--muted);font-weight:500}
+.ankibtns .g0{border-color:var(--rosso);color:var(--rosso)}
+.ankibtns .g2{border-color:var(--verde);color:var(--verde)}
+.ankibtns .g3{border-color:var(--blu);color:var(--blu)}
 </style>
 
 <div class="app">
@@ -3666,7 +3682,7 @@ function renderNav(route){
    <li><a class="navlink tool" href="#plan" ${route.type==='plan'?'aria-current="page"':''}><span class="n">▦</span><span class="t">My plan<br><small class="note">${planNavNote()}</small></span></a></li>
    <li><a class="navlink tool" href="#books" ${route.type==='books'?'aria-current="page"':''}><span class="n">❧</span><span class="t">Your books<br><small class="note">${BOOKS.map((B,i)=>((S.books&&S.books[i])||0)+'/'+B.ch).join(' · ')} chapters</small></span></a></li>
    <li><a class="navlink tool" href="#review" ${route.type==='ripasso'?'aria-current="page"':''}><span class="n">✎</span><span class="t">Mistakes notebook ${due?`<span class="badge">${due}</span>`:''}<br><small class="note">${Object.keys(S.err).length} to review · ${S.mastered} mastered</small></span></a></li>
-   <li><a class="navlink tool" href="#words" ${route.type==='words'?'aria-current="page"':''}><span class="n">↻</span><span class="t">Word review ${vDue().length?`<span class="badge">${vDue().length}</span>`:''}<br><small class="note">${vStats().all} in review · ${vStats().mastered} mastered</small></span></a></li>
+   <li><a class="navlink tool" href="#words" ${route.type==='words'?'aria-current="page"':''}><span class="n">↻</span><span class="t">Flashcards ${vDue().length?`<span class="badge">${vDue().length}</span>`:''}<br><small class="note">Anki method · ${vStats().all} cards · ${vStats().mastered} mature</small></span></a></li>
    <li><a class="navlink tool" href="#vocabulary" ${route.type==='lessico'?'aria-current="page"':''}><span class="n">Aa</span><span class="t">Vocabulary by topic<br><small class="note">${LESSICO.reduce((a,t)=>a+t.w.length,0)} words · ${LESSICO.length} topics</small></span></a></li>
    <li><a class="navlink tool" href="#culture" ${route.type==='cultura'?'aria-current="page"':''}><span class="n">❦</span><span class="t">Culture and accents<br><small class="note">${Object.keys(S.cult).filter(k=>S.cult[k]&&S.cult[k].read).length}/${CULTURA.length} cards read</small></span></a></li>
   </ul></div>
@@ -4386,7 +4402,7 @@ function homeRhythm(){
    <div class="rgrid">
     <div class="card"><span class="lab">Study streak</span><b class="big">${st.cur}<small> ${st.cur===1?'day':'days'}</small></b><span class="note">record: ${st.best} · ${st.total} days studied in total</span></div>
     <div class="card ${due?'due':''}"><span class="lab">Mistakes to review today</span><b class="big">${due}</b><a class="btn ${due?'primary':''}" href="#review">${due?'Review now →':'Open the notebook'}</a></div>
-    <div class="card ${vDue().length?'due':''}"><span class="lab">Words to review today</span><b class="big">${vDue().length}</b><a class="btn ${vDue().length?'primary':''}" href="#words">${vDue().length?'Review now →':'Word review'}</a><span class="note">${vStats().mastered} words mastered</span></div>
+    <div class="card ${vDue().length?'due':''}"><span class="lab">Flashcards for today</span><b class="big">${vDue().length}</b><a class="btn ${vDue().length?'primary':''}" href="#words">${vDue().length?'Study now →':'Flashcards'}</a><span class="note">${vStats().mastered} mature cards</span></div>
    </div>
    <div class="testrow">${TESTS.map(t=>{ const r=S.tests[t.id]; return `<a class="testchip ${r&&r.passed?'passed':''}" href="#test-${t.id}"><b>${t.title}</b><span>${t.range?"Warm-up ":"units "}${tRange(t)} · ${t.lvl}</span><em>${r?(r.passed?'passed · ':'')+r.best+'/20':'to do'}</em></a>`; }).join('')}<a class="testchip lex" href="#exams"><b>Reading exams</b><span>${EXAMS.length} practices</span><em>${Object.keys(S.exam).length} done</em></a><a class="testchip lex" href="#writing"><b>Writing exams</b><span>${WEXAMS.length} tasks</span><em>${Object.values(S.wexam||{}).filter(x=>x.scores).length} marked</em></a></div>
   </section>`;
@@ -4435,7 +4451,7 @@ function renderRipasso(){
   const boxes=[0,0,0,0]; all.forEach(k=>boxes[Math.min(3,S.err[k].b)]++);
   $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Every day · review</div><h1 class="title">Mistakes notebook</h1>
    <p class="subtitle">Every wrong answer lands here and comes back after 1, 3, 7 and 15 days. Get it right four times in a row and it counts as mastered.</p></header>
-   ${vDue().length?`<section class="card examcta"><div><span class="lab">Also due today</span><h3>${vDue().length} ${vDue().length===1?'word':'words'} to review</h3><p class="note" style="margin:0">Spaced review of your vocabulary.</p></div><a class="btn primary" href="#words">Word review →</a></section>`:''}
+   ${vDue().length?`<section class="card examcta"><div><span class="lab">Also due today</span><h3>${vDue().length} ${vDue().length===1?'flashcard':'flashcards'} for today</h3><p class="note" style="margin:0">Anki-style review of your vocabulary.</p></div><a class="btn primary" href="#words">Flashcards →</a></section>`:''}
    <div class="rgrid">
     <div class="card ${due.length?'due':''}"><span class="lab">To review today</span><b class="big">${due.length}</b><div class="btnrow"><button class="btn primary" id="rvstart" ${due.length?'':'disabled'}>Start reviewing</button></div></div>
     <div class="card"><span class="lab">Waiting</span><b class="big">${all.length-due.length}</b><button class="btn" id="rvall" ${all.length?'':'disabled'}>Review everything now</button></div>
@@ -5401,27 +5417,36 @@ Answer only with JSON: {"title":"short title","sections":[["A","heading","<p>tex
 const WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const fromKey=k=>new Date(k+'T12:00:00');
 const fmtDay=(k,o)=>fromKey(k).toLocaleDateString('en-GB',o||{weekday:'long',day:'numeric',month:'long'});
-function planCfg(){ S.plan=S.plan||{}; const P=S.plan; if(!P.start) P.start=dayKey(); if(!Array.isArray(P.days)||!P.days.length) P.days=[0,1,2,3,4,5]; if(P.anchor==null) P.anchor=P.start; if(P.anchorIdx==null) P.anchorIdx=0; P.frozen=P.frozen||{}; P.tick=P.tick||{}; return P; }
+function planCfg(){ S.plan=S.plan||{}; const P=S.plan; if(!P.v3){ P.start='2027-02-01'; P.anchor=P.start; P.anchorIdx=0; P.frozen={}; P.tick={}; P.days=[0,1,2,3,4,5,6]; P.rot=true; P.v3=1; } if(!P.start) P.start=dayKey(); if(!Array.isArray(P.days)||!P.days.length) P.days=[0,1,2,3,4,5]; if(P.anchor==null) P.anchor=P.start; if(P.anchorIdx==null) P.anchorIdx=0; P.frozen=P.frozen||{}; P.tick=P.tick||{}; return P; }
 let PLAN=null;
 function wc(t){ return String(t||'').trim()?String(t).trim().split(/\s+/).length:0; }
 function buildPlan(){
   if(PLAN) return PLAN;
   const out=[], SET_MIN={fill:8,mc:5,fix:5,order:5};
-  const scenes=ASCOLTI.map((a,i)=>({k:'scene',i,m:10,t:`Listening scene: «${a.t}»`,href:'#listening-'+i,auto:()=>!!S.asc[i]}));
-  const cult=CULTURA.map((c,i)=>({k:'cult',i,m:10,t:`Culture card: «${c.t}»`,href:'#culture-'+i,auto:()=>!!(S.cult[i]&&S.cult[i].read)}));
-  const extras=[]; for(let i=0;i<Math.max(scenes.length,cult.length);i++){ if(scenes[i]) extras.push(scenes[i]); if(cult[i]) extras.push(cult[i]); }
+  const scenes=ASCOLTI.map((a,i)=>({t:`Listening scene: «${a.t}» (listen twice, answer, read the notes)`,m:10,href:'#listening-'+i,auto:()=>!!S.asc[i]}));
+  const cult=CULTURA.map((c,i)=>({t:`Culture card: «${c.t}»`,m:10,href:'#culture-'+i,auto:()=>!!(S.cult[i]&&S.cult[i].read)}));
+  const roles=ROLEPLAY.filter(r=>r.lvl!=='A2').map(r=>({t:`Speaking with the AI: «${r.t}» (glance at the useful phrases first)`,m:10,href:'#speaking',pre:()=>{ parMode='ia'; }}));
+  const aloud=TESTI.map((x,i)=>({t:`Read aloud: «${x.t}» (shadowing, then time yourself)`,m:10,href:'#read-aloud-'+i}));
+  const oral=ORALE.filter(o=>o.lvl!=='A2').map(o=>({t:`Speaking test: «${o.t}» (prepare, talk, rate yourself)`,m:10,href:'#speaking',pre:()=>{ parMode='orale'; orLvl=o.lvl; }}));
+  const pools=[scenes,roles,aloud,scenes,cult,oral], idx=[0,0,0,0,0,0], used={};
+  const extras=[]; for(let i=0;i<40;i++){ const k=i%pools.length, pool=pools[k]; const key=pool===scenes?'s':k; used[key]=used[key]||0; extras.push(pool[used[key]++%pool.length]); }
   let ex=0, lexI=0, examI=0;
   const nextExtra=()=>extras[ex++%extras.length];
   const L=(u,tab,t,m,auto)=>({t,m,href:'#unit-'+u.id,tab,u:u.id,auto});
-  const review={t:'Review: mistakes and words due today',m:5,href:'#review'};
-  const verbs={t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'};
+  const review={t:'Review: mistakes notebook + flashcards due today',m:5,href:'#review'};
+  const TOOLS=[{t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'},
+    {t:'False friends: one quiz of 10 questions',m:5,href:'#false-friends',pre:()=>{ falsiMode='quiz'; }},
+    {t:'Sentence lab: translate 5 sentences from Portuguese',m:5,href:'#sentences',pre:()=>{ labMode='trad'; }},
+    {t:'Sentence lab: 5 key word transformations (Cambridge)',m:5,href:'#sentences',pre:()=>{ labMode='trasf'; }},
+    {t:'Listening: numbers, prices and times (10 items)',m:5,href:'#listening',pre:()=>{ ascMode='numeri'; }}];
+  let toolI=0; const nextTool=()=>TOOLS[toolI++%TOOLS.length];
   const setTask=(u,i)=>{ const s=u.ex[i]; return L(u,'esercizi',`Exercises, set ${String.fromCharCode(65+i)}: ${s.title}`,SET_MIN[s.t]||6,()=>!!S.ex[u.id+'-'+i]); };
   const push=(kind,label,unit,tasks)=>out.push({kind,label,unit,tasks});
   UNITS.forEach(u=>{
     const n=uName(u), last=u.ex.length-1;
     if(u.band===0){
       push('unit',`${n} · day 1 of 4`,u,[L(u,'lezione',`Lesson: ${u.title}`,15,()=>!!S.lesson[u.id]),setTask(u,0)]);
-      push('unit',`${n} · day 2 of 4`,u,u.ex.slice(1).map((_,k)=>setTask(u,k+1)).concat([verbs]));
+      push('unit',`${n} · day 2 of 4`,u,u.ex.slice(1).map((_,k)=>setTask(u,k+1)).concat([nextTool()]));
       push('unit',`${n} · day 3 of 4`,u,[L(u,'lettura',`Reading: «${u.reading.title}» + questions`,15,()=>!!S.read[u.id]),L(u,'parla','Listen & speak: read aloud and dictation',10,()=>!!(S.spk[u.id]&&S.spk[u.id].done))]);
       push('unit',`${n} · day 4 of 4`,u,[L(u,'scrittura','Writing task: write it, correct it with the red pen, mark it complete',20,()=>!!(S.write[u.id]&&S.write[u.id].done)),review]);
       if(u.id===106){ const T=TESTS[0]; push('test',T.title,null,[{t:`${T.title}: reading, open cloze and grammar (timed)`,m:30,href:'#test-'+T.id,auto:()=>!!S.tests[T.id]}]); }
@@ -5429,7 +5454,7 @@ function buildPlan(){
     }
     const lex=LESSICO[lexI++%LESSICO.length];
     push('unit',`${n} · day 1 of 6`,u,[L(u,'lezione',`Lesson: ${u.title}`,20,()=>!!S.lesson[u.id]),review]);
-    push('unit',`${n} · day 2 of 6`,u,u.ex.slice(0,last).map((_,i)=>setTask(u,i)).concat([verbs]));
+    push('unit',`${n} · day 2 of 6`,u,u.ex.slice(0,last).map((_,i)=>setTask(u,i)).concat([nextTool()]));
     push('unit',`${n} · day 3 of 6`,u,[setTask(u,last),{t:`Vocabulary: «${lex.t}» (cards)`,m:10,href:'#vocabulary-'+LESSICO.indexOf(lex)},nextExtra()]);
     push('unit',`${n} · day 4 of 6`,u,[L(u,'lettura',`Reading: «${u.reading.title}» + questions`,15,()=>!!S.read[u.id]),L(u,'parla','Listen & speak: read aloud and dictation',10,()=>!!(S.spk[u.id]&&S.spk[u.id].done))]);
     push('unit',`${n} · day 5 of 6`,u,[L(u,'scrittura','Writing: first draft, no dictionary',25,()=>wc(S.write[u.id]&&S.write[u.id].text)>=Math.round(u.write.words[0]*.7))]);
@@ -5448,7 +5473,10 @@ function buildPlan(){
 const tKey=(s,j)=>s.idx+'-'+j;
 function taskDone(s,j){ const t=s.tasks[j]; return !!(planCfg().tick[tKey(s,j)] || (t.auto&&t.auto())); }
 function sessState(s){ const n=s.tasks.filter((_,j)=>taskDone(s,j)).length; return n===s.tasks.length?'done':n?'part':'todo'; }
-function nextDay(k,days){ const d=fromKey(k); for(let i=0;i<8;i++){ if(days.includes((d.getDay()+6)%7)) return dayKey(d); d.setDate(d.getDate()+1); } return dayKey(d); }
+/* rotating work days: Nov 2026 Mon+Tue, then one weekday later each month (Mon-Fri cycle) */
+function workDays(k){ const d=fromKey(k), m=(d.getFullYear()-2026)*12+d.getMonth()-10; const a=((m%5)+5)%5; return [a,(a+1)%5]; }
+function isStudyDay(k,days){ const wd=(fromKey(k).getDay()+6)%7; return days.includes(wd) && !(planCfg().rot && workDays(k).includes(wd)); }
+function nextDay(k,days){ const d=fromKey(k); for(let i=0;i<14;i++){ if(isStudyDay(dayKey(d),days)) return dayKey(d); d.setDate(d.getDate()+1); } return dayKey(d); }
 function planDates(){
   const P=planCfg(), ss=buildPlan(), dates=[];
   let cur=P.anchor;
@@ -5476,7 +5504,7 @@ function sessionHTML(s,date,opts){
   const P=planCfg(), stt=sessState(s), today=dayKey();
   const tag = stt==='done'?'<span class="pstate done">✓ done</span>': date<today?'<span class="pstate late">late</span>': date===today?'<span class="pstate today">today</span>':'<span class="pstate">planned</span>';
   return `<div class="psess ${stt}"><div class="card-h"><div><span class="lab">${esc(fmtDay(date))} · session ${s.idx+1} of ${buildPlan().length}</span><h3>${esc(s.label)}</h3></div><div class="btnrow">${tag}<span class="note">≈ ${s.min} min</span></div></div>
-   <ul class="ptasks">${s.tasks.map((t,j)=>{ const d=taskDone(s,j); return `<li class="${d?'on':''}"><button class="pchk" type="button" data-s="${s.idx}" data-j="${j}" aria-pressed="${d}" aria-label="Mark as done">${d?'✓':''}</button><div class="pt"><span>${esc(t.t)}</span><span class="note">${t.m} min${t.auto?' · ticks itself when you finish it':''}</span></div><a class="btn ghost" href="${t.href}" data-tab="${t.tab||''}" data-u="${t.u||''}">Open →</a></li>`; }).join('')}</ul>
+   <ul class="ptasks">${s.tasks.map((t,j)=>{ const d=taskDone(s,j); return `<li class="${d?'on':''}"><button class="pchk" type="button" data-s="${s.idx}" data-j="${j}" aria-pressed="${d}" aria-label="Mark as done">${d?'✓':''}</button><div class="pt"><span>${esc(t.t)}</span><span class="note">${t.m} min${t.auto?' · ticks itself when you finish it':''}</span></div><a class="btn ghost" href="${t.href}" data-tab="${t.tab||''}" data-u="${t.u||''}" data-s="${s.idx}" data-j="${j}">Open →</a></li>`; }).join('')}</ul>
    ${bookLine(s)}
    ${opts.cta&&stt==='done'?`<p class="note" style="margin:6px 0 0"><span class="pen" style="font-size:22px">Well done!</span> Today's session is complete. Anything extra is a bonus.</p>`:''}</div>`;
 }
@@ -5485,14 +5513,15 @@ function bindSession(root,rerender){
     const was=taskDone(s,j); if(was&&!P.tick[k]){ toast('This task ticks itself from your progress.'); return; }
     if(P.tick[k]) delete P.tick[k]; else { P.tick[k]=dayKey(); tick(2); }
     save(); if(sessState(s)==='done'&&!was) toast(`<span class="pen">Session done!</span> ${esc(s.label)}`); rerender(); renderNav(route()); });
-  root.querySelectorAll('a[data-u]').forEach(a=>a.addEventListener('click',()=>{ if(a.dataset.u&&a.dataset.tab){ S.tab[a.dataset.u]=a.dataset.tab; save(); } }));
+  root.querySelectorAll('a[data-u]').forEach(a=>a.addEventListener('click',()=>{ if(a.dataset.u&&a.dataset.tab){ S.tab[a.dataset.u]=a.dataset.tab; save(); } const t=buildPlan()[+a.dataset.s]&&buildPlan()[+a.dataset.s].tasks[+a.dataset.j]; if(t&&t.pre) t.pre(); }));
 }
 function planNavNote(){ const p=planStatus(); if(p.nextIdx<0) return 'all sessions done!'; const i=p.todayIdx>=0?p.todayIdx:p.nextIdx; return `${p.done}/${p.ss.length} sessions${p.late?` · ${p.late} late`:''}${p.todayIdx>=0&&p.st[p.todayIdx]==='done'?' · today ✓':''}`; }
 function homePlan(){
   const p=planStatus(), pct=Math.round(100*p.done/p.ss.length);
   const show = p.todayIdx>=0 && p.st[p.todayIdx]!=='done' ? p.todayIdx : p.nextIdx;
   const end=p.dates[p.dates.length-1];
-  return `<h2 class="sec">Your plan</h2>
+  const first=p.dates[0], before=p.today<first;
+  return `<h2 class="sec">Your plan</h2>${before?`<p class="callout" style="margin:0 0 14px"><span class="pen">Starts ${esc(fmtDay(first))}.</span> Until then, feel free to explore: anything you do now already counts.</p>`:''}
    <div class="rgrid" style="margin-bottom:14px">
     <div class="card"><span class="lab">Progress</span><b class="big">${p.done}<small>/${p.ss.length} sessions</small></b><span class="rw-bar"><i style="width:${pct}%"></i></span><span class="note">${pct}% · about 25 minutes a day</span></div>
     <div class="card ${p.late?'due':''}"><span class="lab">Schedule</span><b class="big">${p.late?p.late:'✓'}<small>${p.late?' late':' on track'}</small></b><span class="note">${p.late?'Do the next one today, or move the plan forward.':'You are on schedule.'}</span></div>
@@ -5513,7 +5542,8 @@ function renderPlan(){
     const cls=ids.map(i=>p.st[i]==='done'?'done':(k<today?'late':p.st[i]==='part'?'part':'plan'))[0]||'';
     const s=ids.length?p.ss[ids[0]]:null;
     const short=s?(s.kind==='test'?'Test':s.kind==='exam'?'Exam':(s.unit.n?s.unit.n:'U'+s.unit.id)+'·'+(s.label.match(/day (\d)/)||[,''])[1]):'';
-    cells+=`<button class="cday ${cls} ${k===today?'today':''} ${ids.includes(planSel)?'sel':''}" type="button" ${ids.length?`data-i="${ids[0]}"`:'disabled'}><span class="cd">${d}</span>${short?`<span class="cs">${esc(short)}</span>`:''}${cls==='done'?'<span class="ck">✓</span>':''}</button>`; }
+    const isWork=P.rot&&workDays(k).includes((fromKey(k).getDay()+6)%7)&&!ids.length;
+    cells+=`<button class="cday ${cls} ${isWork?'work':''} ${k===today?'today':''} ${ids.includes(planSel)?'sel':''}" type="button" ${ids.length?`data-i="${ids[0]}"`:'disabled'}><span class="cd">${d}</span>${isWork?'<span class="cs">work</span>':''}${short?`<span class="cs">${esc(short)}</span>`:''}${cls==='done'?'<span class="ck">✓</span>':''}</button>`; }
   const pct=Math.round(100*p.done/p.ss.length);
   const wk=[...Array(7)].map((_,i)=>{ const d=fromKey(today); d.setDate(d.getDate()-((d.getDay()+6)%7)+i); return dayKey(d); });
   const weekDone=wk.filter(k=>(byDate[k]||[]).some(i=>p.st[i]==='done')).length, weekPlanned=wk.filter(k=>(byDate[k]||[]).length).length;
@@ -5528,11 +5558,12 @@ function renderPlan(){
    <section class="card" id="psel">${sessionHTML(p.ss[planSel],p.dates[planSel])}</section>
    <section class="card cal"><div class="card-h"><div class="btnrow"><button class="btn ghost" id="cprev" type="button" aria-label="Previous month">←</button><h3 style="margin:0">${new Date(Y,M,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h3><button class="btn ghost" id="cnext" type="button" aria-label="Next month">→</button></div><button class="btn" id="ctoday" type="button">Today</button></div>
     <div class="cgrid">${WD.map(w=>`<div class="cwd">${w}</div>`).join('')}${cells}</div>
-    <div class="cleg"><span><i class="lg done"></i>done</span><span><i class="lg part"></i>started</span><span><i class="lg late"></i>late</span><span><i class="lg plan"></i>planned</span><span><i class="lg today"></i>today</span></div>
+    <div class="cleg"><span><i class="lg done"></i>done</span><span><i class="lg part"></i>started</span><span><i class="lg late"></i>late</span><span><i class="lg plan"></i>planned</span><span><i class="lg today"></i>today</span><span><i class="lg work"></i>work day</span></div>
     <p class="note">Tap a day to see its session. Days without a number are rest days.</p></section>
    <section class="card"><div class="card-h"><div><span class="lab">Settings</span><h3>When do you study?</h3></div></div>
-    <p class="note" style="margin-top:0">Choose your study days. Each session takes about 25 minutes (the shortest are 20, a test day is 30).</p>
+    <p class="note" style="margin-top:0">Days of the week you can study. Each session takes about 25 minutes (the shortest are 20, a test day is 30).</p>
     <div class="chipsel" id="pdays">${WD.map((w,i)=>`<button type="button" data-d="${i}" aria-pressed="${P.days.includes(i)}">${w}</button>`).join('')}</div>
+    <label class="note chk" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="prot" ${P.rot?'checked':''}> Skip my rotating work days (they move one weekday later every month: this month ${workDays(today).map(i=>WD[i]).join(' and ')}, next month ${workDays((()=>{const d=fromKey(today); d.setDate(1); d.setMonth(d.getMonth()+1); return dayKey(d);})()).map(i=>WD[i]).join(' and ')})</label>
     <div class="btnrow" style="margin-top:12px"><label class="note" for="pstart">Start (or restart) on</label><input type="date" id="pstart" class="vsel" value="${p.done?today:P.start}"><button class="btn primary" id="psave" type="button">Update my calendar</button></div>
     <p class="note">Updating keeps the sessions you have finished and spreads the rest from the date you choose. It is also the way to catch up after a holiday or a busy week.</p></section>
    <section class="card"><div class="card-h"><div><span class="lab">Every day, outside the plan</span><h3>The 10 extra minutes that make the difference</h3></div></div>
@@ -5544,7 +5575,7 @@ function renderPlan(){
   $('#ctoday').onclick=()=>{ planView=null; planSel=null; renderPlan(); };
   const rs=$('#presched'); if(rs) rs.onclick=()=>{ reschedule(dayKey()); planSel=null; renderPlan(); renderNav(route()); toast('<span class="pen">Done:</span> the plan now continues from today.'); };
   $('#pdays').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d, i=P.days.indexOf(d); if(i>=0){ if(P.days.length>1) P.days.splice(i,1); } else P.days.push(d); P.days.sort(); $('#pdays').querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-pressed',P.days.includes(+x.dataset.d))); });
-  $('#psave').onclick=()=>{ const v=$('#pstart').value||today; if(!p.done){ P.start=v; P.anchor=v; P.anchorIdx=0; P.frozen={}; save(); } else reschedule(v); planSel=null; planView=null; renderPlan(); renderNav(route()); toast('<span class="pen">Calendar updated.</span>'); };
+  $('#psave').onclick=()=>{ P.rot=$('#prot').checked; const v=$('#pstart').value||today; if(!p.done){ P.start=v; P.anchor=v; P.anchorIdx=0; P.frozen={}; save(); } else reschedule(v); planSel=null; planView=null; renderPlan(); renderNav(route()); toast('<span class="pen">Calendar updated.</span>'); };
 }
 
 /* ---------- BOOKS ---------- */
@@ -5600,56 +5631,95 @@ function renderBooks(id){
 }
 /* end */
 
-/* ---------- SPACED VOCABULARY REVIEW ---------- */
+/* ---------- FLASHCARDS (Anki-style spaced repetition, SM-2) ---------- */
 const VGAP=[1,3,7,15];
-function vsr(){ S.vsr=S.vsr||{}; return S.vsr; }
-function vKeyLex(t,i){ return 'lex:'+hashStr(LESSICO[t].w[i][0]); }
-function vWord(k){
-  if(k.startsWith('my:')){ const w=S.myvoc[k.slice(3)]; return w?{en:w.it,pt:w.pt,ex:w.ex||'',src:'My words'}:null; }
-  if(k.startsWith('lex:')){ for(let t=0;t<LESSICO.length;t++){ const i=LESSICO[t].w.findIndex(w=>'lex:'+hashStr(w[0])===k); if(i>=0){ const w=LESSICO[t].w[i]; return {en:w[0],pt:w[1],ex:w[2],src:LESSICO[t].t,t,i}; } } }
+function vsr(){ S.vsr=S.vsr||{}; const V=S.vsr;
+  Object.keys(V).forEach(k=>{ const e=V[k]; if(e.ef==null){ e.ef=2.5; e.reps=(e.b||0)+1; e.iv=e.m?30:(VGAP[e.b]||1); e.lapses=0; if(e.m){ e.due=addDays(30); } delete e.b; delete e.m; } });
+  return V; }
+const vKeyLex=(t,i)=>'lex:'+hashStr(LESSICO[t].w[i][0]);
+const DECKS=[
+  {id:'my', name:'My words', note:'what you collect from films, books and the translator', keys:()=>Object.keys(S.myvoc||{}).map(k=>'my:'+k)},
+  ...LESSICO.map((T,t)=>({id:'lex'+t, name:T.t, note:T.lvl+' · '+T.w.length+' words', keys:()=>T.w.map((_,i)=>vKeyLex(t,i))})),
+  {id:'ff', name:'False friends', note:FALSI.length+' PT/ES traps', keys:()=>FALSI.map(f=>'ff:'+hashStr(f[0]))},
+  {id:'vb', name:'Irregular verbs', note:Object.keys(VERBI).length+' verbs · past and participle', keys:()=>Object.keys(VERBI).map(v=>'vb:'+v)}
+];
+function vDecks(){ S.vdecks=S.vdecks||{my:true,vb:true,lex0:true}; return S.vdecks; }
+function vCard(k){
+  if(k.startsWith('my:')){ const w=(S.myvoc||{})[k.slice(3)]; return w?{front:w.pt,back:w.it,ex:w.ex||'',say:w.it,src:'My words',ans:[w.it]}:null; }
+  if(k.startsWith('lex:')){ for(let t=0;t<LESSICO.length;t++){ const w=LESSICO[t].w.find(w=>'lex:'+hashStr(w[0])===k); if(w) return {front:w[1],back:w[0],ex:w[2],say:w[0],src:LESSICO[t].t,ans:[w[0]]}; } return null; }
+  if(k.startsWith('ff:')){ const f=FALSI.find(f=>'ff:'+hashStr(f[0])===k); return f?{front:`What does «${f[0]}» really mean?`,back:f[1],ex:`Careful: ${f[2]}. E.g. ${f[3]}`,say:f[0],src:'False friends',ans:[f[1]]}:null; }
+  if(k.startsWith('vb:')){ const v=k.slice(3), d=VERBI[v]; return d?{front:`to ${v} (${d.pt}) · past simple and past participle?`,back:`${v} · ${d.p} · ${d.pp}`,ex:d.ex||'',say:`${v}, ${String(d.p).split('/')[0]}, ${String(d.pp).split('/')[0]}`,src:'Irregular verbs',ans:[`${d.p} ${d.pp}`]}:null; }
   return null;
 }
-function vAdd(k,box){ const V=vsr(); if(V[k]&&!V[k].m) return; const b=box||0; V[k]={b,due:addDays(VGAP[b]),u:Date.now()}; save(); }
-function vDue(){ const t=dayKey(), V=vsr(); return Object.keys(V).filter(k=>!V[k].m&&V[k].due<=t&&vWord(k)); }
-function vStats(){ const V=vsr(), ks=Object.keys(V).filter(k=>vWord(k)); return {all:ks.filter(k=>!V[k].m).length, mastered:ks.filter(k=>V[k].m).length, due:vDue().length}; }
-function vAnswer(k,ok){
-  const V=vsr(), e=V[k]; if(!e) return;
-  if(ok){ e.b++; if(e.b>=VGAP.length){ e.m=dayKey(); } else e.due=addDays(VGAP[e.b]); }
-  else { e.b=0; e.due=addDays(1); }
-  e.u=Date.now(); save();
+function vAdd(k,box){ const V=vsr(); if(V[k]) return; const iv=box?3:1; V[k]={ef:2.5,iv,reps:1,lapses:0,due:addDays(iv),u:Date.now()}; save(); }
+function vNewQuota(){ S.vnew=S.vnew||{}; const t=dayKey(); if(S.vnew.d!==t) S.vnew={d:t,n:0}; return Math.max(0,(S.vnewMax||10)-S.vnew.n); }
+function vNewKeys(){ const V=vsr(), D=vDecks(), seen=new Set(); const out=[]; DECKS.forEach(d=>{ if(!D[d.id]) return; d.keys().forEach(k=>{ if(!V[k]&&!seen.has(k)&&vCard(k)){ seen.add(k); out.push(k); } }); }); return out; }
+function vReviewKeys(){ const t=dayKey(), V=vsr(); return Object.keys(V).filter(k=>V[k].due<=t&&vCard(k)); }
+function vDue(){ return vReviewKeys().concat(vNewKeys().slice(0,vNewQuota())); }
+function vStats(){ const V=vsr(), ks=Object.keys(V).filter(k=>vCard(k)); return {all:ks.length, young:ks.filter(k=>V[k].iv<21).length, mastered:ks.filter(k=>V[k].iv>=21).length, due:vReviewKeys().length, nw:Math.min(vNewQuota(),vNewKeys().length), newLeft:vNewKeys().length}; }
+function vNext(e,g){ // g: 0 again, 1 hard, 2 good, 3 easy → {iv,ef}
+  const isNew=!e||!e.reps; let ef=e?e.ef:2.5, iv=e?e.iv:0;
+  if(g===0) return {iv:0, ef:isNew?ef:Math.max(1.3,ef-.2)};
+  if(isNew) return {iv:[0,1,1,4][g], ef:g===3?ef+.15:ef};
+  if(g===1) return {iv:Math.max(iv+1,Math.round(iv*1.2)), ef:Math.max(1.3,ef-.15)};
+  if(g===2) return {iv:Math.max(iv+1,Math.round(iv*ef)), ef};
+  return {iv:Math.max(iv+2,Math.round(iv*ef*1.3)), ef:ef+.15};
 }
-let vQueue=null, vPos=0, vOk=0;
+const ivTxt=d=>d<=0?'<10 min':d===1?'1 day':d<30?d+' days':d<365?Math.round(d/30)+' mo':(Math.round(d/36.5)/10)+' y';
+function vGrade(k,g){
+  const V=vsr(), e=V[k], isNew=!e;
+  const n=vNext(e,g);
+  if(isNew){ vNewQuota(); S.vnew.n++; }
+  const r={ef:n.ef, iv:n.iv, reps:(e?e.reps:0)+(g?1:0), lapses:(e?e.lapses:0)+(g===0&&!isNew?1:0), due:addDays(Math.max(n.iv,g===0?1:n.iv)), u:Date.now()};
+  if(g===0) r.reps=0;
+  V[k]=r; save(); return g===0;
+}
+let vQueue=null, vPos=0, vOk=0, vAgain=0;
 function renderWords(){
-  const st=vStats(), V=vsr();
-  const boxes=[0,0,0,0]; Object.keys(V).forEach(k=>{ if(!V[k].m&&vWord(k)) boxes[Math.min(3,V[k].b)]++; });
-  $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Every day · vocabulary</div><h1 class="title">Word review</h1>
-   <p class="subtitle">Words come back after 1, 3, 7 and 15 days. You see the Portuguese and type the English. Right: the word moves to the next box. Wrong: it comes back tomorrow. After the 15-day box, it is yours.</p></header>
+  const st=vStats(), D=vDecks(), V=vsr();
+  $('#main').innerHTML=`<header class="uhead"><div class="eyebrow">Every day · vocabulary</div><h1 class="title">Flashcards</h1>
+   <p class="subtitle">The same method as Anki: look at the card, try to remember, turn it and say how well you knew it. Cards you know come back later and later (days, weeks, months); cards you forget come back soon.</p></header>
    <div class="rgrid">
-    <div class="card ${st.due?'due':''}"><span class="lab">Due today</span><b class="big">${st.due}</b><button class="btn ${st.due?'primary':''}" id="vgo" type="button" ${st.due?'':'disabled'}>Review now</button></div>
-    <div class="card"><span class="lab">In review</span><b class="big">${st.all}</b><span class="note">words being learnt</span></div>
-    <div class="card"><span class="lab">Mastered</span><b class="big">${st.mastered}</b><span class="note">survived all four boxes</span></div>
+    <div class="card ${st.due+st.nw?'due':''}"><span class="lab">Today</span><b class="big">${st.due+st.nw}<small> cards</small></b><span class="note">${st.due} to review · ${st.nw} new</span><button class="btn ${st.due+st.nw?'primary':''}" id="vgo" type="button" ${st.due+st.nw?'':'disabled'}>Study now</button></div>
+    <div class="card"><span class="lab">Learning</span><b class="big">${st.young}</b><span class="note">interval under 3 weeks</span></div>
+    <div class="card"><span class="lab">Mature</span><b class="big">${st.mastered}</b><span class="note">interval of 3 weeks or more</span></div>
    </div>
-   <div class="boxes">${boxes.map((n,i)=>`<div class="box"><span class="lab">Box ${i+1}</span><b>${n}</b><span class="note">back in ${VGAP[i]} ${VGAP[i]===1?'day':'days'}</span></div>`).join('')}</div>
    <section class="card" id="vcard" hidden></section>
-   <section class="card"><div class="card-h"><div><span class="lab">Add words</span><h3>Where the words come from</h3></div></div>
-    <ul class="dots"><li>Every word you add to <a href="#beyond">My words</a> enters automatically (back tomorrow).</li><li>In <a href="#vocabulary">Vocabulary by topic</a>, the cards you answer enter by themselves: «Review» comes back tomorrow, «I know it» in 3 days.</li><li>Or add a whole topic at once:</li></ul>
-    <div class="chipsel" id="vtopics">${LESSICO.map((T,t)=>{ const n=T.w.filter((_,i)=>V[vKeyLex(t,i)]).length; return `<button type="button" data-t="${t}" aria-pressed="${n===T.w.length}">${esc(T.t)} · ${n}/${T.w.length}</button>`; }).join('')}</div></section>`;
-  $('#vtopics').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ const t=+b.dataset.t; LESSICO[t].w.forEach((_,i)=>vAdd(vKeyLex(t,i),0)); toast(`<span class="pen">Added:</span> ${esc(LESSICO[t].t)}. The first words come back tomorrow.`); renderWords(); renderNav(route()); });
-  const go=$('#vgo'); if(go) go.onclick=()=>{ vQueue=shuffle(vDue()).slice(0,30); vPos=0; vOk=0; vShow(); };
+   <section class="card"><div class="card-h"><div><span class="lab">Decks</span><h3>What goes into your flashcards</h3></div><label class="note">New cards a day <select id="vmax" class="vsel">${[5,10,15,20,30].map(n=>`<option ${n===(S.vnewMax||10)?'selected':''}>${n}</option>`).join('')}</select></label></div>
+    <p class="note" style="margin-top:0">Turn on the decks you want. New cards enter a few each day (${S.vnewMax||10} by default), so the daily review stays short. Words you mark in the vocabulary cards and words you add from the translator or «My words» enter automatically.</p>
+    <ul class="decks">${DECKS.map(d=>{ const ks=d.keys(), inR=ks.filter(k=>V[k]).length; return `<li><label><input type="checkbox" data-deck="${d.id}" ${D[d.id]?'checked':''}><span><b>${esc(d.name)}</b><span class="note">${esc(d.note)} · ${inR}/${ks.length} started</span></span></label></li>`; }).join('')}</ul></section>
+   <section class="card"><div class="card-h"><div><span class="lab">Anki app</span><h3>Take your cards to Anki</h3></div></div>
+    <p class="note" style="margin-top:0">If you also use the Anki app, export the cards you have started (Portuguese ⇥ English ⇥ example). In Anki: File → Import, choose the file, separator «Tab».</p>
+    <div class="btnrow"><button class="btn" id="vexp" type="button">Export for Anki</button><span class="note" id="vexpm"></span></div></section>`;
+  $('#main').querySelectorAll('[data-deck]').forEach(c=>c.onchange=()=>{ vDecks()[c.dataset.deck]=c.checked; save(); renderWords(); renderNav(route()); });
+  $('#vmax').onchange=e=>{ S.vnewMax=+e.target.value; save(); renderWords(); renderNav(route()); };
+  const go=$('#vgo'); if(go) go.onclick=()=>{ vQueue=shuffle(vReviewKeys()).concat(vNewKeys().slice(0,vNewQuota())); vPos=0; vOk=0; vAgain=0; vShow(); };
+  $('#vexp').onclick=()=>{ const rows=Object.keys(vsr()).map(k=>vCard(k)).filter(Boolean).map(c=>[c.front,c.back,c.ex].map(x=>String(x||'').replace(/[\t\n]+/g,' ')).join('\t'));
+    const txt='#separator:tab\n#html:false\n'+rows.join('\n'); const m=$('#vexpm');
+    try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='english-notebook-anki.txt'; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
+    navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>{ m.textContent=`${rows.length} cards copied. If no file was downloaded, paste them into a .txt file and import it in Anki.`; },()=>{ m.textContent=`${rows.length} cards: the file download only works in the GitHub version.`; }); };
 }
 function vShow(){
-  const c=$('#vcard'); if(!c) return; c.hidden=false;
-  if(vPos>=vQueue.length){ c.innerHTML=`<div class="drill"><div class="pen" style="font-size:38px">Done!</div><p class="lead" style="margin:8px auto">${vOk} right out of ${vQueue.length}.</p><button class="btn primary" id="vback" type="button">Back</button></div>`; $('#vback').onclick=()=>{ renderWords(); renderNav(route()); }; return; }
-  const k=vQueue[vPos], w=vWord(k), e=vsr()[k];
-  c.innerHTML=`<div class="card-h"><span class="lab">${vPos+1}/${vQueue.length} · ${esc(w.src)} · box ${e.b+1}</span></div><div class="drill" style="padding:6px 0"><span class="lab">how do you say it in English?</span><div class="verb" style="font-size:32px">${esc(w.pt)}</div><input id="vin" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="answer"><div class="fb" id="vfb"></div></div><div class="btnrow" style="justify-content:center"><button class="btn primary" id="vchk" type="button">Check</button><button class="btn" id="vnext" type="button" hidden>Next →</button></div>`;
-  const inp=$('#vin'); inp.focus({preventScroll:true}); let done=false;
-  const check=()=>{ if(done){ vPos++; vShow(); return; } if(!inp.value.trim()) return; done=true;
-    const r=judge(inp.value,[w.en,w.en.replace(/^(the|a|an|to)\s+/i,''),...w.en.split(/\s*\/\s*/)]); const ok=r!=='no';
-    vAnswer(k,ok); if(ok) vOk++; tick();
-    $('#vfb').innerHTML=(ok?`<span class="mark ok">Right! ✓</span>${r==='acc'?` <span class="note">${esc(w.en)}</span>`:''}`:`<span class="mark no">${esc(w.en)}</span>`)+(w.ex?`<p class="expl">${esc(w.ex)}</p>`:'')+`<p class="note">${ok?(vsr()[k].m?'Mastered! It will not come back.':'Back in '+VGAP[vsr()[k].b]+' days.'):'Back tomorrow.'} Enter to continue.</p>`;
-    inp.style.color=ok?'var(--verde)':'var(--rosso)'; $('#vchk').hidden=true; $('#vnext').hidden=false; if(canSpeak) speakSeq([{text:w.en}]); };
-  inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); check(); } });
-  $('#vchk').onclick=check; $('#vnext').onclick=check;
+  const c=$('#vcard'); if(!c) return; c.hidden=false; c.scrollIntoView({block:'nearest'});
+  if(vPos>=vQueue.length){ c.innerHTML=`<div class="drill"><div class="pen" style="font-size:38px">Done for today!</div><p class="lead" style="margin:8px auto">${vOk} cards remembered${vAgain?`, ${vAgain} to see again soon`:''}.</p><button class="btn primary" id="vback" type="button">Back</button></div>`; $('#vback').onclick=()=>{ renderWords(); renderNav(route()); }; return; }
+  const k=vQueue[vPos], w=vCard(k), e=vsr()[k];
+  if(!w){ vPos++; return vShow(); }
+  c.innerHTML=`<div class="card-h"><span class="lab">${vPos+1}/${vQueue.length} · ${esc(w.src)}${e&&e.reps?'':' · new'}</span></div>
+   <div class="drill ankic"><div class="verb" style="font-size:28px">${esc(w.front)}</div>
+    <input id="vin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type it (optional) or just think" aria-label="your answer">
+    <div id="vback2" hidden><div class="ankiback">${esc(w.back)}</div>${w.ex?`<p class="expl">${esc(w.ex)}</p>`:''}<div class="fb" id="vfb"></div></div></div>
+   <div class="btnrow" style="justify-content:center" id="vshowrow"><button class="btn primary" id="vshow" type="button">Show answer</button></div>
+   <div class="ankibtns" id="vgrade" hidden>${['Again','Hard','Good','Easy'].map((l,g)=>`<button class="btn g${g}" type="button" data-g="${g}"><b>${l}</b><small>${ivTxt(vNext(e,g).iv)}</small></button>`).join('')}</div>
+   <p class="note" style="text-align:center">Keys: Enter shows the answer · 1 2 3 4 grade it</p>`;
+  const inp=$('#vin'); inp.focus({preventScroll:true});
+  const reveal=()=>{ if(!$('#vback2').hidden) return; $('#vback2').hidden=false; $('#vshowrow').hidden=true; $('#vgrade').hidden=false;
+    if(inp.value.trim()){ const r=judge(inp.value,w.ans.concat(w.ans.map(a=>a.replace(/^(the|a|an|to)\s+/i,'')))); $('#vfb').innerHTML=r!=='no'?'<span class="mark ok">✓ you typed it right</span>':`<span class="mark no">you typed: ${esc(inp.value)}</span>`; }
+    inp.disabled=true; c.focus({preventScroll:true}); if(canSpeak) speakSeq([{text:w.say}]); };
+  const grade=g=>{ if($('#vgrade').hidden) return; const again=vGrade(k,g); tick(); if(again){ vAgain++; vQueue.push(k); } else vOk++; vPos++; vShow(); renderNav(route()); };
+  $('#vshow').onclick=reveal; inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); ev.stopPropagation(); reveal(); } });
+  c.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>grade(+b.dataset.g));
+  c.onkeydown=ev=>{ if(/^[1-4]$/.test(ev.key)&&!$('#vgrade').hidden){ ev.preventDefault(); grade(+ev.key-1); } else if(ev.key==='Enter'&&!$('#vgrade').hidden){ ev.preventDefault(); grade(2); } };
+  c.tabIndex=-1;
 }
 /* end */
 
@@ -5830,7 +5900,7 @@ async function trShowSheet(text,ctx){
   let pt='';
   try{ pt=await translate(text,ctx); s.querySelector('.trs-pt').innerHTML=md(pt); }
   catch(e){ s.querySelector('.trs-pt').innerHTML=trErrHTML(e,text); const a=$('#tradd'); if(a) a.remove(); }
-  const add=$('#tradd'); if(add) add.onclick=()=>{ const k='w'+Date.now().toString(36); S.myvoc[k]={it:text,pt:(pt.split('\n')[0]||'').slice(0,120),ex:(ctx||'').slice(0,200),d:dayKey()}; vAdd('my:'+k,0); save(); add.disabled=true; add.textContent='✓ Added'; toast('<span class="pen">Added</span> to My words and to the word review.'); };
+  const add=$('#tradd'); if(add) add.onclick=()=>{ const k='w'+Date.now().toString(36); S.myvoc[k]={it:text,pt:(pt.split('\n')[0]||'').slice(0,120),ex:(ctx||'').slice(0,200),d:dayKey()}; vAdd('my:'+k,0); save(); add.disabled=true; add.textContent='✓ Added'; toast('<span class="pen">Added</span> to My words and to your flashcards.'); };
 }
 function initTranslate(){
   const ui=document.createElement('div');

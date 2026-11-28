@@ -69,7 +69,7 @@ async function trShowSheet(text,ctx){
   let pt='';
   try{ pt=await translate(text,ctx); s.querySelector('.trs-pt').innerHTML=md(pt); }
   catch(e){ s.querySelector('.trs-pt').innerHTML=trErrHTML(e,text); const a=$('#tradd'); if(a) a.remove(); }
-  const add=$('#tradd'); if(add) add.onclick=()=>{ const k='w'+Date.now().toString(36); S.myvoc[k]={it:text,pt:(pt.split('\n')[0]||'').slice(0,120),ex:(ctx||'').slice(0,200),d:dayKey()}; vAdd('my:'+k,0); save(); add.disabled=true; add.textContent='✓ Added'; toast('<span class="pen">Added</span> to My words and to the word review.'); };
+  const add=$('#tradd'); if(add) add.onclick=()=>{ const k='w'+Date.now().toString(36); S.myvoc[k]={it:text,pt:(pt.split('\n')[0]||'').slice(0,120),ex:(ctx||'').slice(0,200),d:dayKey()}; vAdd('my:'+k,0); save(); add.disabled=true; add.textContent='✓ Added'; toast('<span class="pen">Added</span> to My words and to your flashcards.'); };
 }
 function initTranslate(){
   const ui=document.createElement('div');

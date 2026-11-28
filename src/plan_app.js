@@ -2,27 +2,36 @@
 const WD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const fromKey=k=>new Date(k+'T12:00:00');
 const fmtDay=(k,o)=>fromKey(k).toLocaleDateString('en-GB',o||{weekday:'long',day:'numeric',month:'long'});
-function planCfg(){ S.plan=S.plan||{}; const P=S.plan; if(!P.start) P.start=dayKey(); if(!Array.isArray(P.days)||!P.days.length) P.days=[0,1,2,3,4,5]; if(P.anchor==null) P.anchor=P.start; if(P.anchorIdx==null) P.anchorIdx=0; P.frozen=P.frozen||{}; P.tick=P.tick||{}; return P; }
+function planCfg(){ S.plan=S.plan||{}; const P=S.plan; if(!P.v3){ P.start='2027-02-01'; P.anchor=P.start; P.anchorIdx=0; P.frozen={}; P.tick={}; P.days=[0,1,2,3,4,5,6]; P.rot=true; P.v3=1; } if(!P.start) P.start=dayKey(); if(!Array.isArray(P.days)||!P.days.length) P.days=[0,1,2,3,4,5]; if(P.anchor==null) P.anchor=P.start; if(P.anchorIdx==null) P.anchorIdx=0; P.frozen=P.frozen||{}; P.tick=P.tick||{}; return P; }
 let PLAN=null;
 function wc(t){ return String(t||'').trim()?String(t).trim().split(/\s+/).length:0; }
 function buildPlan(){
   if(PLAN) return PLAN;
   const out=[], SET_MIN={fill:8,mc:5,fix:5,order:5};
-  const scenes=ASCOLTI.map((a,i)=>({k:'scene',i,m:10,t:`Listening scene: «${a.t}»`,href:'#listening-'+i,auto:()=>!!S.asc[i]}));
-  const cult=CULTURA.map((c,i)=>({k:'cult',i,m:10,t:`Culture card: «${c.t}»`,href:'#culture-'+i,auto:()=>!!(S.cult[i]&&S.cult[i].read)}));
-  const extras=[]; for(let i=0;i<Math.max(scenes.length,cult.length);i++){ if(scenes[i]) extras.push(scenes[i]); if(cult[i]) extras.push(cult[i]); }
+  const scenes=ASCOLTI.map((a,i)=>({t:`Listening scene: «${a.t}» (listen twice, answer, read the notes)`,m:10,href:'#listening-'+i,auto:()=>!!S.asc[i]}));
+  const cult=CULTURA.map((c,i)=>({t:`Culture card: «${c.t}»`,m:10,href:'#culture-'+i,auto:()=>!!(S.cult[i]&&S.cult[i].read)}));
+  const roles=ROLEPLAY.filter(r=>r.lvl!=='A2').map(r=>({t:`Speaking with the AI: «${r.t}» (glance at the useful phrases first)`,m:10,href:'#speaking',pre:()=>{ parMode='ia'; }}));
+  const aloud=TESTI.map((x,i)=>({t:`Read aloud: «${x.t}» (shadowing, then time yourself)`,m:10,href:'#read-aloud-'+i}));
+  const oral=ORALE.filter(o=>o.lvl!=='A2').map(o=>({t:`Speaking test: «${o.t}» (prepare, talk, rate yourself)`,m:10,href:'#speaking',pre:()=>{ parMode='orale'; orLvl=o.lvl; }}));
+  const pools=[scenes,roles,aloud,scenes,cult,oral], idx=[0,0,0,0,0,0], used={};
+  const extras=[]; for(let i=0;i<40;i++){ const k=i%pools.length, pool=pools[k]; const key=pool===scenes?'s':k; used[key]=used[key]||0; extras.push(pool[used[key]++%pool.length]); }
   let ex=0, lexI=0, examI=0;
   const nextExtra=()=>extras[ex++%extras.length];
   const L=(u,tab,t,m,auto)=>({t,m,href:'#unit-'+u.id,tab,u:u.id,auto});
-  const review={t:'Review: mistakes and words due today',m:5,href:'#review'};
-  const verbs={t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'};
+  const review={t:'Review: mistakes notebook + flashcards due today',m:5,href:'#review'};
+  const TOOLS=[{t:'Irregular verbs: 5 minutes of practice',m:5,href:'#verbs'},
+    {t:'False friends: one quiz of 10 questions',m:5,href:'#false-friends',pre:()=>{ falsiMode='quiz'; }},
+    {t:'Sentence lab: translate 5 sentences from Portuguese',m:5,href:'#sentences',pre:()=>{ labMode='trad'; }},
+    {t:'Sentence lab: 5 key word transformations (Cambridge)',m:5,href:'#sentences',pre:()=>{ labMode='trasf'; }},
+    {t:'Listening: numbers, prices and times (10 items)',m:5,href:'#listening',pre:()=>{ ascMode='numeri'; }}];
+  let toolI=0; const nextTool=()=>TOOLS[toolI++%TOOLS.length];
   const setTask=(u,i)=>{ const s=u.ex[i]; return L(u,'esercizi',`Exercises, set ${String.fromCharCode(65+i)}: ${s.title}`,SET_MIN[s.t]||6,()=>!!S.ex[u.id+'-'+i]); };
   const push=(kind,label,unit,tasks)=>out.push({kind,label,unit,tasks});
   UNITS.forEach(u=>{
     const n=uName(u), last=u.ex.length-1;
     if(u.band===0){
       push('unit',`${n} · day 1 of 4`,u,[L(u,'lezione',`Lesson: ${u.title}`,15,()=>!!S.lesson[u.id]),setTask(u,0)]);
-      push('unit',`${n} · day 2 of 4`,u,u.ex.slice(1).map((_,k)=>setTask(u,k+1)).concat([verbs]));
+      push('unit',`${n} · day 2 of 4`,u,u.ex.slice(1).map((_,k)=>setTask(u,k+1)).concat([nextTool()]));
       push('unit',`${n} · day 3 of 4`,u,[L(u,'lettura',`Reading: «${u.reading.title}» + questions`,15,()=>!!S.read[u.id]),L(u,'parla','Listen & speak: read aloud and dictation',10,()=>!!(S.spk[u.id]&&S.spk[u.id].done))]);
       push('unit',`${n} · day 4 of 4`,u,[L(u,'scrittura','Writing task: write it, correct it with the red pen, mark it complete',20,()=>!!(S.write[u.id]&&S.write[u.id].done)),review]);
       if(u.id===106){ const T=TESTS[0]; push('test',T.title,null,[{t:`${T.title}: reading, open cloze and grammar (timed)`,m:30,href:'#test-'+T.id,auto:()=>!!S.tests[T.id]}]); }
@@ -30,7 +39,7 @@ function buildPlan(){
     }
     const lex=LESSICO[lexI++%LESSICO.length];
     push('unit',`${n} · day 1 of 6`,u,[L(u,'lezione',`Lesson: ${u.title}`,20,()=>!!S.lesson[u.id]),review]);
-    push('unit',`${n} · day 2 of 6`,u,u.ex.slice(0,last).map((_,i)=>setTask(u,i)).concat([verbs]));
+    push('unit',`${n} · day 2 of 6`,u,u.ex.slice(0,last).map((_,i)=>setTask(u,i)).concat([nextTool()]));
     push('unit',`${n} · day 3 of 6`,u,[setTask(u,last),{t:`Vocabulary: «${lex.t}» (cards)`,m:10,href:'#vocabulary-'+LESSICO.indexOf(lex)},nextExtra()]);
     push('unit',`${n} · day 4 of 6`,u,[L(u,'lettura',`Reading: «${u.reading.title}» + questions`,15,()=>!!S.read[u.id]),L(u,'parla','Listen & speak: read aloud and dictation',10,()=>!!(S.spk[u.id]&&S.spk[u.id].done))]);
     push('unit',`${n} · day 5 of 6`,u,[L(u,'scrittura','Writing: first draft, no dictionary',25,()=>wc(S.write[u.id]&&S.write[u.id].text)>=Math.round(u.write.words[0]*.7))]);
@@ -49,7 +58,10 @@ function buildPlan(){
 const tKey=(s,j)=>s.idx+'-'+j;
 function taskDone(s,j){ const t=s.tasks[j]; return !!(planCfg().tick[tKey(s,j)] || (t.auto&&t.auto())); }
 function sessState(s){ const n=s.tasks.filter((_,j)=>taskDone(s,j)).length; return n===s.tasks.length?'done':n?'part':'todo'; }
-function nextDay(k,days){ const d=fromKey(k); for(let i=0;i<8;i++){ if(days.includes((d.getDay()+6)%7)) return dayKey(d); d.setDate(d.getDate()+1); } return dayKey(d); }
+/* rotating work days: Nov 2026 Mon+Tue, then one weekday later each month (Mon-Fri cycle) */
+function workDays(k){ const d=fromKey(k), m=(d.getFullYear()-2026)*12+d.getMonth()-10; const a=((m%5)+5)%5; return [a,(a+1)%5]; }
+function isStudyDay(k,days){ const wd=(fromKey(k).getDay()+6)%7; return days.includes(wd) && !(planCfg().rot && workDays(k).includes(wd)); }
+function nextDay(k,days){ const d=fromKey(k); for(let i=0;i<14;i++){ if(isStudyDay(dayKey(d),days)) return dayKey(d); d.setDate(d.getDate()+1); } return dayKey(d); }
 function planDates(){
   const P=planCfg(), ss=buildPlan(), dates=[];
   let cur=P.anchor;
@@ -77,7 +89,7 @@ function sessionHTML(s,date,opts){
   const P=planCfg(), stt=sessState(s), today=dayKey();
   const tag = stt==='done'?'<span class="pstate done">✓ done</span>': date<today?'<span class="pstate late">late</span>': date===today?'<span class="pstate today">today</span>':'<span class="pstate">planned</span>';
   return `<div class="psess ${stt}"><div class="card-h"><div><span class="lab">${esc(fmtDay(date))} · session ${s.idx+1} of ${buildPlan().length}</span><h3>${esc(s.label)}</h3></div><div class="btnrow">${tag}<span class="note">≈ ${s.min} min</span></div></div>
-   <ul class="ptasks">${s.tasks.map((t,j)=>{ const d=taskDone(s,j); return `<li class="${d?'on':''}"><button class="pchk" type="button" data-s="${s.idx}" data-j="${j}" aria-pressed="${d}" aria-label="Mark as done">${d?'✓':''}</button><div class="pt"><span>${esc(t.t)}</span><span class="note">${t.m} min${t.auto?' · ticks itself when you finish it':''}</span></div><a class="btn ghost" href="${t.href}" data-tab="${t.tab||''}" data-u="${t.u||''}">Open →</a></li>`; }).join('')}</ul>
+   <ul class="ptasks">${s.tasks.map((t,j)=>{ const d=taskDone(s,j); return `<li class="${d?'on':''}"><button class="pchk" type="button" data-s="${s.idx}" data-j="${j}" aria-pressed="${d}" aria-label="Mark as done">${d?'✓':''}</button><div class="pt"><span>${esc(t.t)}</span><span class="note">${t.m} min${t.auto?' · ticks itself when you finish it':''}</span></div><a class="btn ghost" href="${t.href}" data-tab="${t.tab||''}" data-u="${t.u||''}" data-s="${s.idx}" data-j="${j}">Open →</a></li>`; }).join('')}</ul>
    ${bookLine(s)}
    ${opts.cta&&stt==='done'?`<p class="note" style="margin:6px 0 0"><span class="pen" style="font-size:22px">Well done!</span> Today's session is complete. Anything extra is a bonus.</p>`:''}</div>`;
 }
@@ -86,14 +98,15 @@ function bindSession(root,rerender){
     const was=taskDone(s,j); if(was&&!P.tick[k]){ toast('This task ticks itself from your progress.'); return; }
     if(P.tick[k]) delete P.tick[k]; else { P.tick[k]=dayKey(); tick(2); }
     save(); if(sessState(s)==='done'&&!was) toast(`<span class="pen">Session done!</span> ${esc(s.label)}`); rerender(); renderNav(route()); });
-  root.querySelectorAll('a[data-u]').forEach(a=>a.addEventListener('click',()=>{ if(a.dataset.u&&a.dataset.tab){ S.tab[a.dataset.u]=a.dataset.tab; save(); } }));
+  root.querySelectorAll('a[data-u]').forEach(a=>a.addEventListener('click',()=>{ if(a.dataset.u&&a.dataset.tab){ S.tab[a.dataset.u]=a.dataset.tab; save(); } const t=buildPlan()[+a.dataset.s]&&buildPlan()[+a.dataset.s].tasks[+a.dataset.j]; if(t&&t.pre) t.pre(); }));
 }
 function planNavNote(){ const p=planStatus(); if(p.nextIdx<0) return 'all sessions done!'; const i=p.todayIdx>=0?p.todayIdx:p.nextIdx; return `${p.done}/${p.ss.length} sessions${p.late?` · ${p.late} late`:''}${p.todayIdx>=0&&p.st[p.todayIdx]==='done'?' · today ✓':''}`; }
 function homePlan(){
   const p=planStatus(), pct=Math.round(100*p.done/p.ss.length);
   const show = p.todayIdx>=0 && p.st[p.todayIdx]!=='done' ? p.todayIdx : p.nextIdx;
   const end=p.dates[p.dates.length-1];
-  return `<h2 class="sec">Your plan</h2>
+  const first=p.dates[0], before=p.today<first;
+  return `<h2 class="sec">Your plan</h2>${before?`<p class="callout" style="margin:0 0 14px"><span class="pen">Starts ${esc(fmtDay(first))}.</span> Until then, feel free to explore: anything you do now already counts.</p>`:''}
    <div class="rgrid" style="margin-bottom:14px">
     <div class="card"><span class="lab">Progress</span><b class="big">${p.done}<small>/${p.ss.length} sessions</small></b><span class="rw-bar"><i style="width:${pct}%"></i></span><span class="note">${pct}% · about 25 minutes a day</span></div>
     <div class="card ${p.late?'due':''}"><span class="lab">Schedule</span><b class="big">${p.late?p.late:'✓'}<small>${p.late?' late':' on track'}</small></b><span class="note">${p.late?'Do the next one today, or move the plan forward.':'You are on schedule.'}</span></div>
@@ -114,7 +127,8 @@ function renderPlan(){
     const cls=ids.map(i=>p.st[i]==='done'?'done':(k<today?'late':p.st[i]==='part'?'part':'plan'))[0]||'';
     const s=ids.length?p.ss[ids[0]]:null;
     const short=s?(s.kind==='test'?'Test':s.kind==='exam'?'Exam':(s.unit.n?s.unit.n:'U'+s.unit.id)+'·'+(s.label.match(/day (\d)/)||[,''])[1]):'';
-    cells+=`<button class="cday ${cls} ${k===today?'today':''} ${ids.includes(planSel)?'sel':''}" type="button" ${ids.length?`data-i="${ids[0]}"`:'disabled'}><span class="cd">${d}</span>${short?`<span class="cs">${esc(short)}</span>`:''}${cls==='done'?'<span class="ck">✓</span>':''}</button>`; }
+    const isWork=P.rot&&workDays(k).includes((fromKey(k).getDay()+6)%7)&&!ids.length;
+    cells+=`<button class="cday ${cls} ${isWork?'work':''} ${k===today?'today':''} ${ids.includes(planSel)?'sel':''}" type="button" ${ids.length?`data-i="${ids[0]}"`:'disabled'}><span class="cd">${d}</span>${isWork?'<span class="cs">work</span>':''}${short?`<span class="cs">${esc(short)}</span>`:''}${cls==='done'?'<span class="ck">✓</span>':''}</button>`; }
   const pct=Math.round(100*p.done/p.ss.length);
   const wk=[...Array(7)].map((_,i)=>{ const d=fromKey(today); d.setDate(d.getDate()-((d.getDay()+6)%7)+i); return dayKey(d); });
   const weekDone=wk.filter(k=>(byDate[k]||[]).some(i=>p.st[i]==='done')).length, weekPlanned=wk.filter(k=>(byDate[k]||[]).length).length;
@@ -129,11 +143,12 @@ function renderPlan(){
    <section class="card" id="psel">${sessionHTML(p.ss[planSel],p.dates[planSel])}</section>
    <section class="card cal"><div class="card-h"><div class="btnrow"><button class="btn ghost" id="cprev" type="button" aria-label="Previous month">←</button><h3 style="margin:0">${new Date(Y,M,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h3><button class="btn ghost" id="cnext" type="button" aria-label="Next month">→</button></div><button class="btn" id="ctoday" type="button">Today</button></div>
     <div class="cgrid">${WD.map(w=>`<div class="cwd">${w}</div>`).join('')}${cells}</div>
-    <div class="cleg"><span><i class="lg done"></i>done</span><span><i class="lg part"></i>started</span><span><i class="lg late"></i>late</span><span><i class="lg plan"></i>planned</span><span><i class="lg today"></i>today</span></div>
+    <div class="cleg"><span><i class="lg done"></i>done</span><span><i class="lg part"></i>started</span><span><i class="lg late"></i>late</span><span><i class="lg plan"></i>planned</span><span><i class="lg today"></i>today</span><span><i class="lg work"></i>work day</span></div>
     <p class="note">Tap a day to see its session. Days without a number are rest days.</p></section>
    <section class="card"><div class="card-h"><div><span class="lab">Settings</span><h3>When do you study?</h3></div></div>
-    <p class="note" style="margin-top:0">Choose your study days. Each session takes about 25 minutes (the shortest are 20, a test day is 30).</p>
+    <p class="note" style="margin-top:0">Days of the week you can study. Each session takes about 25 minutes (the shortest are 20, a test day is 30).</p>
     <div class="chipsel" id="pdays">${WD.map((w,i)=>`<button type="button" data-d="${i}" aria-pressed="${P.days.includes(i)}">${w}</button>`).join('')}</div>
+    <label class="note chk" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="prot" ${P.rot?'checked':''}> Skip my rotating work days (they move one weekday later every month: this month ${workDays(today).map(i=>WD[i]).join(' and ')}, next month ${workDays((()=>{const d=fromKey(today); d.setDate(1); d.setMonth(d.getMonth()+1); return dayKey(d);})()).map(i=>WD[i]).join(' and ')})</label>
     <div class="btnrow" style="margin-top:12px"><label class="note" for="pstart">Start (or restart) on</label><input type="date" id="pstart" class="vsel" value="${p.done?today:P.start}"><button class="btn primary" id="psave" type="button">Update my calendar</button></div>
     <p class="note">Updating keeps the sessions you have finished and spreads the rest from the date you choose. It is also the way to catch up after a holiday or a busy week.</p></section>
    <section class="card"><div class="card-h"><div><span class="lab">Every day, outside the plan</span><h3>The 10 extra minutes that make the difference</h3></div></div>
@@ -145,5 +160,5 @@ function renderPlan(){
   $('#ctoday').onclick=()=>{ planView=null; planSel=null; renderPlan(); };
   const rs=$('#presched'); if(rs) rs.onclick=()=>{ reschedule(dayKey()); planSel=null; renderPlan(); renderNav(route()); toast('<span class="pen">Done:</span> the plan now continues from today.'); };
   $('#pdays').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ const d=+b.dataset.d, i=P.days.indexOf(d); if(i>=0){ if(P.days.length>1) P.days.splice(i,1); } else P.days.push(d); P.days.sort(); $('#pdays').querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-pressed',P.days.includes(+x.dataset.d))); });
-  $('#psave').onclick=()=>{ const v=$('#pstart').value||today; if(!p.done){ P.start=v; P.anchor=v; P.anchorIdx=0; P.frozen={}; save(); } else reschedule(v); planSel=null; planView=null; renderPlan(); renderNav(route()); toast('<span class="pen">Calendar updated.</span>'); };
+  $('#psave').onclick=()=>{ P.rot=$('#prot').checked; const v=$('#pstart').value||today; if(!p.done){ P.start=v; P.anchor=v; P.anchorIdx=0; P.frozen={}; save(); } else reschedule(v); planSel=null; planView=null; renderPlan(); renderNav(route()); toast('<span class="pen">Calendar updated.</span>'); };
 }
