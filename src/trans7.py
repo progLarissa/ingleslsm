@@ -48,3 +48,8 @@ r("""<p class="subtitle">Every wrong answer lands here and comes back after 1, 3
    ${vDue().length?`<section class="card examcta"><div><span class="lab">Also due today</span><h3>${vDue().length} ${vDue().length===1?'flashcard':'flashcards'} for today</h3><p class="note" style="margin:0">Anki-style review of your vocabulary.</p></div><a class="btn primary" href="#words">Flashcards →</a></section>`:''}""")
 r("""<section class="card examcta"><div><span class="lab">Your main goal · reading for exams</span>""","""<section class="card examcta"><div><span class="lab">Exam writing</span><h3>Writing exams</h3><p>Essays, e-mails, reviews, reports and proposals in the real Cambridge and IELTS formats, marked criterion by criterion like an examiner.</p></div><a class="btn" href="#writing">Write now →</a></section>
   <section class="card examcta"><div><span class="lab">Your main goal · reading for exams</span>""")
+
+r("""  if(h==='words') return {type:'words'};""","""  if(h==='words') return {type:'words'};
+  if(h==='progress') return {type:'progress'};""")
+r("  else if(r.type==='words') renderWords();","  else if(r.type==='words') renderWords();\n  else if(r.type==='progress') renderProgress();")
+r("""</ul></div><p class="syncline" id="syncline">${syncText()}</p>`;""","""</ul></div><p class="syncline" id="syncline">${syncText()}</p><a class="navlink tool" href="#progress" ${route.type==='progress'?'aria-current="page"':''}><span class="n">⇄</span><span class="t">Move your progress<br><small class="note">export · import between devices</small></span></a>`;""")
