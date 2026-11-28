@@ -5694,10 +5694,13 @@ function renderWords(){
   $('#main').querySelectorAll('[data-deck]').forEach(c=>c.onchange=()=>{ vDecks()[c.dataset.deck]=c.checked; save(); renderWords(); renderNav(route()); });
   $('#vmax').onchange=e=>{ S.vnewMax=+e.target.value; save(); renderWords(); renderNav(route()); };
   const go=$('#vgo'); if(go) go.onclick=()=>{ vQueue=shuffle(vReviewKeys()).concat(vNewKeys().slice(0,vNewQuota())); vPos=0; vOk=0; vAgain=0; vShow(); };
-  $('#vexp').onclick=()=>{ const rows=Object.keys(vsr()).map(k=>vCard(k)).filter(Boolean).map(c=>[c.front,c.back,c.ex].map(x=>String(x||'').replace(/[\t\n]+/g,' ')).join('\t'));
+  $('#vexp').onclick=async()=>{ const rows=Object.keys(vsr()).map(k=>vCard(k)).filter(Boolean).map(c=>[c.front,c.back,c.ex].map(x=>String(x||'').replace(/[\t\n]+/g,' ')).join('\t'));
     const txt='#separator:tab\n#html:false\n'+rows.join('\n'); const m=$('#vexpm');
-    try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='english-notebook-anki.txt'; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
-    navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>{ m.textContent=`${rows.length} cards copied. If no file was downloaded, paste them into a .txt file and import it in Anki.`; },()=>{ m.textContent=`${rows.length} cards: the file download only works in the GitHub version.`; }); };
+    const dl=window.claude&&window.claude.use?await window.claude.use('downloads').catch(()=>null):null;
+    if(dl){ try{ await dl.save({filename:'english-notebook-anki.txt',data:txt}); m.textContent=`${rows.length} cards saved. In Anki: File → Import.`; return; }catch(e){ if(e&&e.code==='cancelled'){ m.textContent='Download cancelled.'; return; } } }
+    else { try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='english-notebook-anki.txt'; document.body.appendChild(a); a.click(); a.remove(); m.textContent=`${rows.length} cards saved. In Anki: File → Import.`; return; }catch(e){} }
+    navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>{ m.textContent=`${rows.length} cards copied: paste them into a .txt file and import it in Anki.`; },()=>{ m.textContent='The file could not be saved here. Try the GitHub version.'; });
+  };
 }
 function vShow(){
   const c=$('#vcard'); if(!c) return; c.hidden=false; c.scrollIntoView({block:'nearest'});
